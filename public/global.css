@@ -1,0 +1,43 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #333;
+    color: #eee;
+}
+
+#header, #preview, #timeline {
+    position: absolute;
+    left: 0;
+    right: 0;
+}
+
+#header {
+    top: 0;
+    height: 3em;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+#preview {
+    top: 3em;
+    bottom: 100px;
+}
+
+#timeline {
+    bottom: 0;
+    height: 100px;
+}
+
+#header > * {
+    height: 2em;
+    margin: 0 0.5em;
+    font-size: 1em;
+    font-family: ArtifaktElement;
+}
+
+#header .title {
+    height: auto;
+}

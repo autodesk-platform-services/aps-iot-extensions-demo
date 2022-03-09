@@ -1,0 +1,16 @@
+{
+  "name": "forge-iot-example",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "devDependencies": {
+    "@types/chart.js": "^2.9.35",
+    "@types/forge-viewer": "^7.61.0"
+  },
+  "dependencies": {
+    "express": "^4.17.3",
+    "forge-apis": "^0.9.0"
+  }
+}

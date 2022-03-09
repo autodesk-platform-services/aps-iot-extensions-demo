@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/style.css">
+    <link rel="stylesheet" href="global.css">
+
+    <title>Autodesk Forge IoT Example</title>
+</head>
+
+<body>
+    <div id="header">
+        <img class="logo" src="/logo.png" alt="Autodesk Forge">
+        <span class="title">IoT Example</span>
+    </div>
+    <div id="preview"></div>
+    <div id="timeline"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/6.2.2/browser/pixi.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.1/chart.min.js"></script>
+	<script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/7.*/viewer3D.js"></script>
+	<script src="vendor/chronos-etu.js"></script>
+    <script src="extensions/IoT.Common.js"></script>
+    <script src="extensions/IoT.SensorList.js"></script>
+    <script src="extensions/IoT.SensorDetail.js"></script>
+    <script src="extensions/IoT.Sprites.js"></script>
+    <script src="extensions/IoT.Heatmaps.js"></script>
+    <script type="module" src="/index.js"></script>
+</body>
+
+</html>
