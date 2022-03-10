@@ -3,37 +3,37 @@
 class SensorListExtension extends BaseExtension {
     constructor(viewer, options) {
         super(viewer, options);
-        this._panel = null;
+        this.panel = null;
     }
 
     onDataChange({ sensors, historicalData, currentSensorID, currentChannelID, currentTimestamp }) {
         // TODO: only update what needs to be updated
-        this._panel.update(this._sensors, this._historicalData, this._currentTimestamp);
+        this.panel.update(this._sensors, this._historicalData, this._currentTimestamp);
     }
 
     async load() {
         await super.load();
-        this._panel = new SensorListPanel(this.viewer, 'sensor-list', 'Sensor List');
+        this.panel = new SensorListPanel(this.viewer, 'sensor-list', 'Sensor List');
         console.log('IoT.SensorList extension loaded.');
         return true;
     }
 
     unload() {
         super.unload();
-        this._panel.uninitialize();
-        this._panel = null;
+        this.panel.uninitialize();
+        this.panel = null;
         console.log('IoT.SensorList extension unloaded.');
         return true;
     }
 
     activate() {
         super.activate();
-        this._panel.setVisible(true);
+        this.panel.setVisible(true);
     }
 
     deactivate() {
         super.deactivate();
-        this._panel.setVisible(false);
+        this.panel.setVisible(false);
     }
 
     onToolbarCreated() {

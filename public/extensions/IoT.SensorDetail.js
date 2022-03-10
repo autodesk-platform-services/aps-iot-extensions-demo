@@ -4,7 +4,7 @@
 class SensorDetailExtension extends BaseExtension {
     constructor(viewer, options) {
         super(viewer, options);
-        this._panel = null;
+        this.panel = null;
     }
 
     onDataChange({ sensors, historicalData, currentSensorID, currentChannelID, currentTimestamp }) {
@@ -13,39 +13,39 @@ class SensorDetailExtension extends BaseExtension {
             if (this._sensors && this._historicalData && this._currentSensorID) {
                 const sensor = this._sensors.get(this._currentSensorID);
                 const data = this._historicalData.get(this._currentSensorID);
-                this._panel.updateData(sensor, data);
-                this._panel.setTitle(`Sensor Detail (${sensor.name})`);
+                this.panel.updateData(sensor, data);
+                this.panel.setTitle(`Sensor Detail (${sensor.name})`);
             }
         }
         if (currentTimestamp) {
             const data = this._historicalData.get(this._currentSensorID);
-            this._panel.updateTimestamp(data, this._currentTimestamp);
+            this.panel.updateTimestamp(data, this._currentTimestamp);
         }
     }
 
     async load() {
         await super.load();
-        this._panel = new SensorDetailPanel(this.viewer, 'sensor-detail', 'Sensor Detail');
+        this.panel = new SensorDetailPanel(this.viewer, 'sensor-detail', 'Sensor Detail');
         console.log('IoT.SensorDetail extension loaded.');
         return true;
     }
 
     unload() {
         super.unload();
-        this._panel.uninitialize();
-        this._panel = null;
+        this.panel.uninitialize();
+        this.panel = null;
         console.log('IoT.SensorDetail extension unloaded.');
         return true;
     }
 
     activate() {
         super.activate();
-        this._panel.setVisible(true);
+        this.panel.setVisible(true);
     }
 
     deactivate() {
         super.deactivate();
-        this._panel.setVisible(false);
+        this.panel.setVisible(false);
     }
 
     onToolbarCreated() {

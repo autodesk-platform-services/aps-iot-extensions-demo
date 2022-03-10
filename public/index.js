@@ -15,21 +15,23 @@ async function init() {
         }
     }
     async function onTimeRangeUpdated(ev) {
-        console.log('Updating time range', ev.start, ev.end);
         const historicalData = await loadHistoricalData({ start: new Date(ev.start), end: new Date(ev.end) });
         for (const ext of extensions) {
             ext.setHistoricalData(historicalData);
         }
     }
     async function onCurrentTimeUpdated(ev) {
-        console.log('Updating current time', ev.time);
         const currentTimestamp = new Date(ev.time);
         for (const ext of extensions) {
             ext.setCurrentTimestamp(currentTimestamp);
         }
     }
+    async function onCurrentChannelUpdated(channelId) {
+        for (const ext of extensions) {
+            ext.setCurrentChannel(channelId);
+        }
+    }
     async function onSensorSelected(sensorId) {
-        console.log('Updating current sensor', sensorId);
         for (const ext of extensions) {
             ext.setCurrentSensor(sensorId);
         }
@@ -38,23 +40,47 @@ async function init() {
     timeline = await initTimeline(document.getElementById('timeline'), onTimeRangeUpdated, onCurrentTimeUpdated);
     viewer = await initViewer(document.getElementById('preview'), ['Autodesk.AEC.LevelsExtension', 'IoT.SensorList', 'IoT.SensorDetail', 'IoT.Sprites', 'IoT.Heatmaps']);
     viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async function () {
+        function adjustPanelStyle(panel, { left, right, top, bottom, width, height }) {
+            const style = panel.container.style;
+            style.setProperty('left', left ? left : 'unset');
+            style.setProperty('right', right ? right : 'unset');
+            style.setProperty('top', top ? top : 'unset');
+            style.setProperty('bottom', bottom ? bottom : 'unset');
+            style.setProperty('width', width ? width : 'unset');
+            style.setProperty('height', height ? height : 'unset');
+        }
+
+        const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');
+        levelsExt.levelsPanel.setVisible(true);
+        adjustPanelStyle(levelsExt.levelsPanel, { left: '10px', top: '10px', width: '300px', height: '300px' });
+
         const sensorListExt = viewer.getExtension('IoT.SensorList');
         sensorListExt.activate();
+        adjustPanelStyle(sensorListExt.panel, { right: '10px', top: '10px', width: '500px', height: '300px' });
         extensions.push(sensorListExt);
+
         const sensorDetailExt = viewer.getExtension('IoT.SensorDetail');
         sensorDetailExt.activate();
+        adjustPanelStyle(sensorDetailExt.panel, { right: '10px', top: '320px', width: '500px', height: '300px' });
         extensions.push(sensorDetailExt);
+
+        const heatmapsExt = viewer.getExtension('IoT.Heatmaps');
+        heatmapsExt.activate();
+        adjustPanelStyle(heatmapsExt.panel, { left: '10px', top: '320px', width: '300px', height: '150px' });
+        extensions.push(heatmapsExt);
+
         const spritesExt = viewer.getExtension('IoT.Sprites');
         spritesExt.activate();
         extensions.push(spritesExt);
-        const heatmapsExt = viewer.getExtension('IoT.Heatmaps');
-        heatmapsExt.activate();
-        extensions.push(heatmapsExt);
+
         onExtensionsLoaded();
         onTimeRangeUpdated({ start: new Date('2022-01-01'), end: new Date('2022-01-30') });
         onSensorSelected('sensor-1');
         spritesExt.onSensorClicked = (sensorId) => {
             onSensorSelected(sensorId);
+        };
+        heatmapsExt.onChannelChanged = (channelId) => {
+            onCurrentChannelUpdated(channelId);
         };
     });
     loadModel(viewer, FORGE_MODEL_URN, FORGE_MODEL_VIEW);
