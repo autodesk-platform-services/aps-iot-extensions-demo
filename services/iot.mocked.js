@@ -40,10 +40,21 @@ const SENSORS = {
     },
     'sensor-2': {
         model_id: 'hmc-1',
-        name: 'Kitchen',
-        desc: 'Basic sensor in the middle of the kitchen.',
+        name: 'Dining Table',
+        desc: 'Basic sensor at the dining table.',
         location: {
-            x: 3.21,
+            x: -10,
+            y: 41.64,
+            z: -12.15
+        },
+        surfaceDbId: 4111
+    },
+    'sensor-3': {
+        model_id: 'hmc-1',
+        name: 'Kitchen',
+        desc: 'Basic sensor in the kitchen.',
+        location: {
+            x: 10,
             y: 41.64,
             z: -12.15
         },
@@ -74,6 +85,14 @@ async function getSensorData(timerange) {
             values: {
                 'temp': generateRandomValues(20.0, 24.0, 32),
                 'co2': generateRandomValues(540.0, 600.0, 32)
+            }
+        },
+        'sensor-3': {
+            count: 32,
+            timestamps: generateTimestamps(timerange.start, timerange.end, 32),
+            values: {
+                'temp': generateRandomValues(24.0, 28.0, 32),
+                'co2': generateRandomValues(500.0, 620.0, 32)
             }
         }
     };

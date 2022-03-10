@@ -77,11 +77,17 @@ class HeatmapsExtension extends BaseExtension {
             return;
         }
         const shadingGroup = new Autodesk.DataVisualization.Core.SurfaceShadingGroup('iot-heatmap');
+        const rooms = new Map();
         for (const [sensorId, sensor] of this._sensors.entries()) {
-            const room = new Autodesk.DataVisualization.Core.SurfaceShadingNode(sensorId, sensor.surfaceDbId);
+            if (!rooms.has(sensor.surfaceDbId)) {
+                const room = new Autodesk.DataVisualization.Core.SurfaceShadingNode(sensorId, sensor.surfaceDbId);
+                shadingGroup.addChild(room);
+                rooms.set(sensor.surfaceDbId, room);
+            }
+            const room = rooms.get(sensor.surfaceDbId);
             const types = Array.from(sensor.model.channels.keys());
             room.addPoint(new Autodesk.DataVisualization.Core.SurfaceShadingPoint(sensorId, sensor.location, types));
-            shadingGroup.addChild(room);
+            
         }
         this._surfaceShadingData = new Autodesk.DataVisualization.Core.SurfaceShadingData();
         this._surfaceShadingData.addChild(shadingGroup);
