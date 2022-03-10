@@ -36,7 +36,7 @@ const SENSORS = {
             y: 11.49,
             z: -12.97
         },
-        surfaceDbId: 4111
+        surfaceDbId: 4124
     },
     'sensor-2': {
         model_id: 'hmc-1',
@@ -47,7 +47,7 @@ const SENSORS = {
             y: 41.64,
             z: -12.15
         },
-        surfaceDbId: 4124
+        surfaceDbId: 4111
     }
 };
 
@@ -64,7 +64,7 @@ async function getSensorData(timerange) {
             count: 32,
             timestamps: generateTimestamps(timerange.start, timerange.end, 32),
             values: {
-                'temp': generateRandomValues(20.0, 24.0, 32),
+                'temp': generateRandomValues(18.0, 28.0, 32),
                 'co2': generateRandomValues(540.0, 600.0, 32)
             }
         },
