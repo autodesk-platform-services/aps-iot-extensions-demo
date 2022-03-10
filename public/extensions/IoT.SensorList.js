@@ -4,16 +4,33 @@ class SensorListExtension extends BaseExtension {
     constructor(viewer, options) {
         super(viewer, options);
         this.panel = null;
+        this.update = this.update.bind(this);
     }
 
-    onDataChange({ sensors, historicalData, currentSensorID, currentChannelID, currentTimestamp }) {
-        // TODO: only update what needs to be updated
-        this.panel.update(this._sensors, this._historicalData, this._currentTimestamp);
+    onDataViewChanged(oldDataView, newDataView) {
+        if (oldDataView) {
+            oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.update);
+            oldDataView.removeEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.update);
+            oldDataView.removeEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.update);
+        }
+        if (newDataView) {
+            newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.update);
+            newDataView.addEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.update);
+            newDataView.addEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.update);
+        }
+    }
+
+    update() {
+        this.panel.update(
+            this.dataView.getSensors(),
+            this.dataView.getHistoricalData(),
+            this.dataView.getCurrentTime()
+        );
     }
 
     async load() {
         await super.load();
-        this.panel = new SensorListPanel(this.viewer, 'sensor-list', 'Sensor List');
+        this.panel = new SensorListPanel(this.viewer, 'iot-sensor-list', 'Sensors');
         console.log('IoT.SensorList extension loaded.');
         return true;
     }
@@ -45,16 +62,9 @@ class SensorListPanel extends Autodesk.Viewing.UI.PropertyPanel {
     constructor(viewer, id, title, options) {
         super(viewer.container, id, title, options);
         this.viewer = viewer;
-        this.setProperties([
-            { displayCategory: 'Floor 1', displayName: 'Sensor 1.1', displayValue: 'Temp: 25°C, Hum: 45%, CO2: 1.22' },
-            { displayCategory: 'Floor 1', displayName: 'Sensor 1.2', displayValue: 'Temp: 27°C, Hum: 42%, CO2: 1.13' },
-            { displayCategory: 'Floor 2', displayName: 'Sensor 2.1', displayValue: 'Temp: 24°C, Hum: 46%, CO2: 1.08' },
-            { displayCategory: 'Floor 3', displayName: 'Sensor 3.1', displayValue: 'Temp: 26°C, Hum: 44%, CO2: 1.89' }
-        ]);
     }
 
     /**
-     * 
      * @param {Map<SensorID, Sensor>} sensors 
      * @param {Map<SensorID, HistoricalData>} data
      * @param {Date} timestamp 

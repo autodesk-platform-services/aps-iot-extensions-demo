@@ -5,37 +5,57 @@ class HeatmapsExtension extends BaseExtension {
         super(viewer, options);
         this.panel = null;
         this._surfaceShadingData = null;
-        this._getSensorValue = (surfaceShadingPoint, sensorType) => {
-            const sensor = this._sensors.get(surfaceShadingPoint.id);
-            const sensorData = this._historicalData.get(surfaceShadingPoint.id);
+        this.getSensorValue = (surfaceShadingPoint, sensorType) => {
+            const sensors = this.dataView.getSensors();
+            const sensor = sensors.get(surfaceShadingPoint.id);
+            const historicalData = this.dataView.getHistoricalData();
+            const sensorData = historicalData.get(surfaceShadingPoint.id);
             const channel = sensor.model.channels.get(sensorType);
             const channelData = sensorData.values.get(sensorType);
-            const closestIndex = this._findNearestTimestampIndex(sensorData.timestamps, this._currentTimestamp);
+            const currentTimestamp = this.dataView.getCurrentTime();
+            const closestIndex = this.dataView.findNearestTimestampIndex(sensorData.timestamps, currentTimestamp);
             const value = channelData[closestIndex];
             return (value - channel.min) / (channel.max - channel.min);
         };
         this.onChannelChanged = null;
+        this.updateHeatmaps = this.updateHeatmaps.bind(this);
+        this.updateChannels = this.updateChannels.bind(this);
     }
 
-    async onDataChange({ sensors, historicalData, currentSensorID, currentChannelID, currentTimestamp }) {
-        // TODO: only update what needs to be updated
-        if (this.isActive() && this._sensors && this._historicalData) {
+    onDataViewChanged(oldDataView, newDataView) {
+        if (oldDataView) {
+            oldDataView.removeEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateHeatmaps);
+            oldDataView.removeEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateHeatmaps);
+            oldDataView.removeEventListener(DataViewEvents.CURRENT_CHANNEL_CHANGED, this.updateHeatmaps);
+            oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.updateChannels);
+        }
+        if (newDataView) {
+            newDataView.addEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateHeatmaps);
+            newDataView.addEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateHeatmaps);
+            newDataView.addEventListener(DataViewEvents.CURRENT_CHANNEL_CHANGED, this.updateHeatmaps);
+            newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.updateChannels);
+        }
+    }
+
+    async updateHeatmaps() {
+        const currentChannelID = this.dataView.getCurrentChannelID();
+        if (this.isActive() && currentChannelID) {
             if (!this._surfaceShadingData) {
                 await this._setupSurfaceShading(this.viewer.model);
-                this._dataVizExt.renderSurfaceShading('iot-heatmap', this._currentChannelID, this._getSensorValue);
+                this._dataVizExt.renderSurfaceShading('iot-heatmap', currentChannelID, this.getSensorValue);
             } else {
                 if (currentChannelID) {
-                    this._dataVizExt.renderSurfaceShading('iot-heatmap', this._currentChannelID, this._getSensorValue);
+                    this._dataVizExt.renderSurfaceShading('iot-heatmap', currentChannelID, this.getSensorValue);
                 }
-                this._dataVizExt.updateSurfaceShading(this._getSensorValue);
+                this._dataVizExt.updateSurfaceShading(this.getSensorValue);
             }
         }
-        if (sensors) {
-            // For now we assume all available sensors use the same model!
-            const sensors = Array.from(this._sensors.values());
-            const model = sensors[0].model;
-            this.panel.updateChannels(model.channels);
-        }
+    }
+
+    updateChannels() {
+        const sensors = Array.from(this.dataView.getSensors().values());
+        const model = sensors[0].model;
+        this.panel.updateChannels(model.channels);
     }
 
     async load() {
@@ -61,6 +81,7 @@ class HeatmapsExtension extends BaseExtension {
     activate() {
         super.activate();
         this.panel.setVisible(true);
+        this.updateChannels();
     }
 
     deactivate() {
@@ -73,12 +94,13 @@ class HeatmapsExtension extends BaseExtension {
     }
 
     async _setupSurfaceShading(model) {
-        if (!this._sensors) {
+        const sensors = this.dataView.getSensors();
+        if (!sensors) {
             return;
         }
         const shadingGroup = new Autodesk.DataVisualization.Core.SurfaceShadingGroup('iot-heatmap');
         const rooms = new Map();
-        for (const [sensorId, sensor] of this._sensors.entries()) {
+        for (const [sensorId, sensor] of sensors.entries()) {
             if (!rooms.has(sensor.surfaceDbId)) {
                 const room = new Autodesk.DataVisualization.Core.SurfaceShadingNode(sensorId, sensor.surfaceDbId);
                 shadingGroup.addChild(room);
@@ -87,34 +109,12 @@ class HeatmapsExtension extends BaseExtension {
             const room = rooms.get(sensor.surfaceDbId);
             const types = Array.from(sensor.model.channels.keys());
             room.addPoint(new Autodesk.DataVisualization.Core.SurfaceShadingPoint(sensorId, sensor.location, types));
-            
         }
         this._surfaceShadingData = new Autodesk.DataVisualization.Core.SurfaceShadingData();
         this._surfaceShadingData.addChild(shadingGroup);
         this._surfaceShadingData.initialize(model);
         await this._dataVizExt.setupSurfaceShading(model, this._surfaceShadingData);
         // this._dataVizExt.registerSurfaceShadingColors('temp', [0x00ff00, 0xffff00, 0xff0000]);
-        // this._dataVizExt.registerSurfaceShadingColors('co2', [0x00ff00, 0xffff00, 0xff0000]);
-    }
-
-    _findNearestTimestampIndex(list, timestamp) {
-        let start = 0;
-        let end = list.length - 1;
-        if (timestamp <= list[0]) {
-            return 0;
-        }
-        if (timestamp >= list[end]) {
-            return end;
-        }
-        while (end - start > 1) {
-            let currentIndex = start + Math.floor(0.5 * (end - start));
-            if (timestamp < list[currentIndex]) {
-                end = currentIndex;
-            } else {
-                start = currentIndex;
-            }
-        }
-        return (timestamp - list[start] < list[end] - timestamp) ? start : end;
     }
 }
 

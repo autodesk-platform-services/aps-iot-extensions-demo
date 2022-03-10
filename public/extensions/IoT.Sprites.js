@@ -7,14 +7,21 @@ class SpritesExtension extends BaseExtension {
         this._onSpriteClicked = this._onSpriteClicked.bind(this);
         this._dbIdToSensorId = new Map();
         this.onSensorClicked = null;
+        this.update = this.update.bind(this);
     }
 
-    onDataChange({ sensors, historicalData, currentSensorID, currentChannelID, currentTimestamp }) {
-        // TODO: only update what needs to be updated
-        if (sensors) {
-            if (this.isActive()) {
-                this._refreshSprites();
-            }
+    onDataViewChanged(oldDataView, newDataView) {
+        if (oldDataView) {
+            oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.update);
+        }
+        if (newDataView) {
+            newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.update);
+        }
+    }
+
+    update() {
+        if (this.isActive()) {
+            this._refreshSprites();
         }
     }
 
@@ -56,14 +63,15 @@ class SpritesExtension extends BaseExtension {
 
     _refreshSprites() {
         this._dataVizExt.removeAllViewables();
-        if (!this._sensors) {
+        const sensors = this.dataView.getSensors();
+        if (!sensors) {
             return;
         }
         const viewableData = new Autodesk.DataVisualization.Core.ViewableData();
         viewableData.spriteSize = 32;
         this._dbIdToSensorId.clear();
         let dbid = 1000000;
-        for (const [sensorId, sensor] of this._sensors.entries()) {
+        for (const [sensorId, sensor] of sensors.entries()) {
             this._dbIdToSensorId.set(dbid, sensorId);
             const viewable = new Autodesk.DataVisualization.Core.SpriteViewable(sensor.location, this._style, dbid++);
             viewableData.addViewable(viewable);

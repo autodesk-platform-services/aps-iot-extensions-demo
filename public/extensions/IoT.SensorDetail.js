@@ -5,27 +5,49 @@ class SensorDetailExtension extends BaseExtension {
     constructor(viewer, options) {
         super(viewer, options);
         this.panel = null;
+        this.updateCharts = this.updateCharts.bind(this);
+        this.updateCursor = this.updateCursor.bind(this);
     }
 
-    onDataChange({ sensors, historicalData, currentSensorID, currentChannelID, currentTimestamp }) {
-        // TODO: only update what needs to be updated
-        if (sensors || historicalData || currentSensorID) {
-            if (this._sensors && this._historicalData && this._currentSensorID) {
-                const sensor = this._sensors.get(this._currentSensorID);
-                const data = this._historicalData.get(this._currentSensorID);
-                this.panel.updateData(sensor, data);
-                this.panel.setTitle(`Sensor Detail (${sensor.name})`);
-            }
+    onDataViewChanged(oldDataView, newDataView) {
+        if (oldDataView) {
+            oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.updateCharts);
+            oldDataView.removeEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateCharts);
+            oldDataView.removeEventListener(DataViewEvents.CURRENT_SENSOR_CHANGED, this.updateCharts);
+            oldDataView.removeEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateCursor);
         }
-        if (currentTimestamp) {
-            const data = this._historicalData.get(this._currentSensorID);
-            this.panel.updateTimestamp(data, this._currentTimestamp);
+        if (newDataView) {
+            newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.updateCharts);
+            newDataView.addEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateCharts);
+            newDataView.addEventListener(DataViewEvents.CURRENT_SENSOR_CHANGED, this.updateCharts);
+            newDataView.addEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateCursor);
         }
+    }
+
+    updateCharts() {
+        const sensors = this.dataView.getSensors();
+        const historicalData = this.dataView.getHistoricalData();
+        const currentSensorID = this.dataView.getCurrentSensorID();
+        if (sensors && historicalData && currentSensorID) {
+            const sensor = sensors.get(currentSensorID);
+            const data = historicalData.get(currentSensorID);
+            this.panel.updateCharts(sensor, data);
+            this.panel.setTitle(`Sensor: ${sensor.name}`);
+        }
+    }
+
+    updateCursor() {
+        const historicalData = this.dataView.getHistoricalData();
+        const currentSensorID = this.dataView.getCurrentSensorID();
+        const currentTimestamp = this.dataView.getCurrentTime();
+        const sensorData = historicalData.get(currentSensorID);
+        const sampleIndex = this.dataView.findNearestTimestampIndex(sensorData.timestamps, currentTimestamp);
+        this.panel.updateCursor(sampleIndex);
     }
 
     async load() {
         await super.load();
-        this.panel = new SensorDetailPanel(this.viewer, 'sensor-detail', 'Sensor Detail');
+        this.panel = new SensorDetailPanel(this.viewer, 'iot-sensor-detail', 'Sensor Details');
         console.log('IoT.SensorDetail extension loaded.');
         return true;
     }
@@ -78,17 +100,16 @@ class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
         this.container.appendChild(this.content);
     }
 
-    updateTimestamp(data, timestamp) {
-        const currentIndex = this._findNearestTimestampIndex(data.timestamps, timestamp);
-        if (currentIndex !== this._lastHighlightedPointIndex) {
+    updateCursor(sampleIndex) {
+        if (sampleIndex !== this._lastHighlightedPointIndex) {
             for (const chart of this._charts) {
                 const radii = chart.data.datasets[0].radius;
                 for (let i = 0; i < radii.length; i++) {
-                    radii[i] = (i === currentIndex) ? 9 : 3;
+                    radii[i] = (i === sampleIndex) ? 9 : 3;
                 }
                 chart.update();
             }
-            this._lastHighlightedPointIndex = currentIndex;
+            this._lastHighlightedPointIndex = sampleIndex;
         }
     }
 
@@ -97,7 +118,7 @@ class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
      * @param {Sensor?} sensor
      * @param {HistoricalData?} data
      */
-    updateData(sensor, data) {
+    updateCharts(sensor, data) {
         this.content.innerHTML = '';
         this._charts = [];
         if (!sensor || !data) {
@@ -139,26 +160,6 @@ class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
                 }
             }
         });
-    }
-
-    _findNearestTimestampIndex(list, timestamp) {
-        let start = 0;
-        let end = list.length - 1;
-        if (timestamp <= list[0]) {
-            return 0;
-        }
-        if (timestamp >= list[end]) {
-            return end;
-        }
-        while (end - start > 1) {
-            let currentIndex = start + Math.floor(0.5 * (end - start));
-            if (timestamp < list[currentIndex]) {
-                end = currentIndex;
-            } else {
-                start = currentIndex;
-            }
-        }
-        return (timestamp - list[start] < list[end] - timestamp) ? start : end;
     }
 }
 

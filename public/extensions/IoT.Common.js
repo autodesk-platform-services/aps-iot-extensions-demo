@@ -52,63 +52,105 @@
  * @property {Map<ChannelID, number[]>} values - Sensor channel values, indexed by channel ID.
  */
 
+const DataViewEvents = {
+    SENSORS_CHANGED: 'sensors-changed',
+    HISTORICAL_DATA_CHANGED: 'historical-data-changed',
+    CURRENT_TIME_CHANGED: 'current-time-changed',
+    CURRENT_SENSOR_CHANGED: 'current-sensor-changed',
+    CURRENT_CHANNEL_CHANGED: 'current-channel-changed',
+    ERROR: 'error'
+};
+
+class DataView {
+    constructor() {
+        this._listeners = new Map();
+    }
+
+    addEventListener(type, listener) {
+        if (!this._listeners.has(type)) {
+            this._listeners.set(type, new Set());
+        }
+        this._listeners.get(type).add(listener);
+    }
+
+    removeEventListener(type, listener) {
+        if (this._listeners.has(type)) {
+            this._listeners.get(type).delete(listener);
+        }
+    }
+
+    triggerEvent(type, data) {
+        if (this._listeners.has(type)) {
+            const listeners = this._listeners.get(type);
+            for (const listener of listeners.values()) {
+                listener.call(this, data);
+            }
+        }
+    }
+
+    /**
+     * @returns {{ start: Date, end: Date }} Current time range.
+     */
+    getTimerange() {
+        throw new Error('Not implemented');
+    }
+
+    /**
+     * @returns {Map<SensorID, Sensor>} All visible sensors, indexed by sensor ID.
+     */
+    getSensors() {
+        throw new Error('Not implemented');
+    }
+
+    /**
+     * @returns {Map<SensorID, HistoricalData>} Historical sensor data, indexed by sensor ID.
+     */
+    getHistoricalData() {
+        throw new Error('Not implemented');
+    }
+
+    /**
+     * @returns {Date} Current timestamp.
+     */
+    getCurrentTime() {
+        throw new Error('Not implemented');
+    }
+
+    /**
+     * @returns {SensorID} Current sensor ID.
+     */
+    getCurrentSensorID() {
+        throw new Error('Not implemented');
+    }
+
+    /**
+     * @returns {ChannelID} Current sensor channel ID.
+     */
+    getCurrentChannelID() {
+        throw new Error('Not implemented');
+    }
+}
+
 class BaseExtension extends Autodesk.Viewing.Extension {
     constructor(viewer, options) {
         super(viewer, options);
-        /** @type {Map<SensorID, Sensor>} */ this._sensors = null;
-        /** @type {Map<SensorID, HistoricalData>} */ this._historicalData = null;
-        /** @type {SensorID} */ this._currentSensorID = null;
-        /** @type {ChannelID} */ this._currentChannelID = null;
-        /** @type {Date} */ this._currentTimestamp = null;
+        this._dataView = null;
         this._dataVizExt = null;
         this._group = null;
         this._button = null;
         this._panel = null;
     }
 
-    /**
-     * @param {Map<SensorID, Sensor>} sensors Read-only map of sensors, indexed by sensor ID.
-     */
-    setSensors(sensors) {
-        this._sensors = sensors;
-        this.onDataChange({ sensors: true });
+    get dataView() {
+        return this._dataView;
     }
 
-    /**
-     * @param {Map<SensorID, HistoricalData>} data Read-only map of historical sensor data, indexed by sensor ID.
-     */
-    setHistoricalData(data) {
-        this._historicalData = data;
-        this.onDataChange({ historicalData: true });
+    set dataView(value) {
+        this.onDataViewChanged(this._dataView, value);
+        this._dataView = value;
     }
 
-    /**
-     * @param {SensorID} sensorID Current sensor ID.
-     */
-    setCurrentSensor(sensorID) {
-        this._currentSensorID = sensorID;
-        this.onDataChange({ currentSensorID: true });
-    }
-
-    /**
-     * @param {ChannelID} channelID Current channel ID.
-     */
-    setCurrentChannel(channelID) {
-        this._currentChannelID = channelID;
-        this.onDataChange({ currentChannelID: true });
-    }
-
-    /**
-     * @param {Date} sensor Current timestamp.
-     */
-    setCurrentTimestamp(timestamp) {
-        this._currentTimestamp = timestamp;
-        this.onDataChange({ currentTimestamp: true });
-    }
-
-    onDataChange(flags) {
-        throw new Error('Not implemented');
-    }
+    onDataViewChanged(oldValue, newValue) {}
 
     async load() {
         this._dataVizExt = await this.viewer.loadExtension('Autodesk.DataVisualization');
