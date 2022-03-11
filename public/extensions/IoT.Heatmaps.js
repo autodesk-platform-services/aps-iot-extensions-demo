@@ -50,7 +50,7 @@ class HeatmapsExtension extends BaseExtension {
 
     async onSensorsChanged() {
         if (this.isActive()) {
-            const channelID = this.currentChannelID || this.getDefaultChannelID();
+            const channelID = this.currentChannelID;
             await this._setupSurfaceShading(this.viewer.model);
             this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
         }
@@ -58,7 +58,7 @@ class HeatmapsExtension extends BaseExtension {
 
     async updateHeatmaps() {
         if (this.isActive()) {
-            const channelID = this.currentChannelID || this.getDefaultChannelID();
+            const channelID = this.currentChannelID;
             if (!this._surfaceShadingData) {
                 await this._setupSurfaceShading(this.viewer.model);
                 this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);

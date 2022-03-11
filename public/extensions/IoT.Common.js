@@ -58,33 +58,7 @@ const DataViewEvents = {
     ERROR: 'error'
 };
 
-class DataView {
-    constructor() {
-        this._listeners = new Map();
-    }
-
-    addEventListener(type, listener) {
-        if (!this._listeners.has(type)) {
-            this._listeners.set(type, new Set());
-        }
-        this._listeners.get(type).add(listener);
-    }
-
-    removeEventListener(type, listener) {
-        if (this._listeners.has(type)) {
-            this._listeners.get(type).delete(listener);
-        }
-    }
-
-    triggerEvent(type, data) {
-        if (this._listeners.has(type)) {
-            const listeners = this._listeners.get(type);
-            for (const listener of listeners.values()) {
-                listener.call(this, data);
-            }
-        }
-    }
-
+class DataView extends EventTarget {
     /**
      * @returns {Map<SensorID, Sensor>} All visible sensors, indexed by sensor ID.
      */
@@ -138,7 +112,7 @@ class BaseExtension extends Autodesk.Viewing.Extension {
     onCurrentTimeChanged(oldTime, newTime) {}
 
     get currentSensorID() {
-        return this._currentSensorID;
+        return this._currentSensorID || this._getDefaultSensorID();
     }
 
     set currentSensorID(newSensorID) {
@@ -150,7 +124,7 @@ class BaseExtension extends Autodesk.Viewing.Extension {
     onCurrentSensorChanged(oldSensorID, newSensorID) {}
 
     get currentChannelID() {
-        return this._currentChannelID;
+        return this._currentChannelID || this._getDefaultChannelID();
     }
 
     set currentChannelID(newChannelID) {
@@ -240,15 +214,21 @@ class BaseExtension extends Autodesk.Viewing.Extension {
         }
     }
 
-    getDefaultSensorID() {
+    _getDefaultSensorID() {
         const sensorIDs = Array.from(this.dataView.getSensors().keys());
-        return sensorIDs[0];
+        return sensorIDs.length > 0 ? sensorIDs[0] : null;
     }
 
-    getDefaultChannelID() {
-        const defaultSensorID = this.getDefaultSensorID();
+    _getDefaultChannelID() {
+        const defaultSensorID = this._getDefaultSensorID();
+        if (!defaultSensorID) {
+            return null;
+        }
         const defaultSensor = this.dataView.getSensors().get(defaultSensorID);
+        if (!defaultSensor) {
+            return null;
+        }
         const channelIds = Array.from(defaultSensor.model.channels.keys());
-        return channelIds[0];
+        return channelIds.length > 0 ? channelIds[0] : null;
     }
 }

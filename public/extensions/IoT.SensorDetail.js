@@ -31,7 +31,7 @@ class SensorDetailExtension extends BaseExtension {
     updateCharts() {
         const sensors = this.dataView.getSensors();
         const historicalData = this.dataView.getHistoricalData();
-        const sensorID = this.currentSensorID || this.getDefaultSensorID();
+        const sensorID = this.currentSensorID;
         if (sensors && historicalData) {
             const sensor = sensors.get(sensorID);
             const data = historicalData.get(sensorID);
@@ -42,7 +42,7 @@ class SensorDetailExtension extends BaseExtension {
 
     updateCursor() {
         const historicalData = this.dataView.getHistoricalData();
-        const sensorID = this.currentSensorID || this.getDefaultSensorID();
+        const sensorID = this.currentSensorID;
         const sensorData = historicalData.get(sensorID);
         const sampleIndex = this.findNearestTimestampIndex(sensorData.timestamps, this.currentTime);
         this.panel.updateCursor(sampleIndex);
