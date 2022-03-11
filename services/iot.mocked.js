@@ -59,6 +59,17 @@ const SENSORS = {
             z: -12.15
         },
         surfaceDbId: 4111
+    },
+    'sensor-4': {
+        model_id: 'hmc-1',
+        name: 'Bedroom',
+        desc: 'Basic sensor in the bedroom.',
+        location: {
+            x: -7.46,
+            y: 41.47,
+            z: 2.97
+        },
+        surfaceDbId: 4085
     }
 };
 
@@ -93,6 +104,14 @@ async function getSensorData(timerange) {
             values: {
                 'temp': generateRandomValues(24.0, 28.0, 32),
                 'co2': generateRandomValues(500.0, 620.0, 32)
+            }
+        },
+        'sensor-4': {
+            count: 32,
+            timestamps: generateTimestamps(timerange.start, timerange.end, 32),
+            values: {
+                'temp': generateRandomValues(20.0, 24.0, 32),
+                'co2': generateRandomValues(600.0, 640.0, 32)
             }
         }
     };

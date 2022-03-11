@@ -30,19 +30,17 @@ async function loadHistoricalData(timerange) {
 }
 
 export class MyDataView extends DataView {
-    constructor() {
+    constructor(timerange) {
         super();
-        this._timerange = { start: new Date(), end: new Date() };
+        this._timerange = timerange;
+        this._floor = null;
         this._sensors = new Map();
         this._historicalData = new Map();
-        this._currentTime = this._timerange.start;
-        this._currentSensorID = null;
-        this._currentChannelID = null;
         loadSensors()
             .then(sensors => {
                 this._sensors = sensors;
                 this.triggerEvent(DataViewEvents.SENSORS_CHANGED, {});
-                this.setTimerange(new Date('2022-01-01'), new Date('2022-01-30'));
+                this.setTimerange(this._timerange);
             })
             .catch(err => {
                 console.error(err);
@@ -50,14 +48,8 @@ export class MyDataView extends DataView {
             });
     }
 
-    setTimerange(start, end) {
-        this._timerange.start = start;
-        this._timerange.end = end;
-        if (this._currentTime < this._timerange.start) {
-            this._currentTime = this._timerange.start;
-        } else if (this._currentTime > this._timerange.end) {
-            this._currentTime = this._timerange.end;
-        }
+    setTimerange(timerange) {
+        this._timerange = timerange;
         loadHistoricalData(this._timerange)
             .then(data => {
                 this._historicalData = data;
@@ -69,55 +61,29 @@ export class MyDataView extends DataView {
             });
     }
 
-    setCurrentTime(time) {
-        this._currentTime = time;
-        this.triggerEvent(DataViewEvents.CURRENT_TIME_CHANGED, {});
-    }
-
-    setCurrentSensorID(sensorId) {
-        this._currentSensorID = sensorId;
-        this.triggerEvent(DataViewEvents.CURRENT_SENSOR_CHANGED, {});
-    }
-
-    setCurrentChannelID(channelId) {
-        this._currentChannelID = channelId;
-        this.triggerEvent(DataViewEvents.CURRENT_CHANNEL_CHANGED, {});
-    }
-
     getTimerange() {
         return this._timerange;
     }
 
+    setFloor(floor) {
+        this._floor = floor;
+        this.triggerEvent(DataViewEvents.SENSORS_CHANGED, {});
+    }
+
+    getFloor() {
+        return this._floor;
+    }
+
     getSensors() {
-        return this._sensors;
+        if (this._floor) {
+            const { zMin, zMax } = this._floor;
+            return this._sensors.filter(sensor => sensor.location.z >= zMin && sensor.location.z <= zMax);
+        } else {
+            return this._sensors;
+        }
     }
 
     getHistoricalData() {
         return this._historicalData;
-    }
-
-    getCurrentTime() {
-        return this._currentTime;
-    }
-
-    getCurrentSensorID() {
-        if (this._currentSensorID) {
-            return this._currentSensorID;
-        } else if (this._sensors && this._sensors.size > 0) {
-            return this._sensors.keys().next().value;
-        } else {
-            return null;
-        }
-    }
-
-    getCurrentChannelID() {
-        if (this._currentChannelID) {
-            return this._currentChannelID;
-        } else if (this._sensors && this._sensors.size > 0) {
-            const sensor = this._sensors.values().next().value;
-            return sensor.model.channels.keys().next().value;
-        } else {
-            return null;
-        }
     }
 }

@@ -19,16 +19,17 @@ class HeatmapsExtension extends BaseExtension {
         this.onChannelChanged = null;
         this.updateHeatmaps = this.updateHeatmaps.bind(this);
         this.updateChannels = this.updateChannels.bind(this);
+        this.onSensorsChanged = this.onSensorsChanged.bind(this);
     }
 
     onDataViewChanged(oldDataView, newDataView) {
         if (oldDataView) {
             oldDataView.removeEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateHeatmaps);
-            oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.updateChannels);
+            oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.onSensorsChanged);
         }
         if (newDataView) {
             newDataView.addEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateHeatmaps);
-            newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.updateChannels);
+            newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.onSensorsChanged);
         }
     }
 
@@ -40,6 +41,14 @@ class HeatmapsExtension extends BaseExtension {
         this.updateHeatmaps();
     }
 
+    async onSensorsChanged() {
+        if (this.isActive()) {
+            const channelID = this.currentChannelID || this.getDefaultChannelID();
+            await this._setupSurfaceShading(this.viewer.model);
+            this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
+        }
+    }
+
     async updateHeatmaps() {
         if (this.isActive()) {
             const channelID = this.currentChannelID || this.getDefaultChannelID();
@@ -47,9 +56,6 @@ class HeatmapsExtension extends BaseExtension {
                 await this._setupSurfaceShading(this.viewer.model);
                 this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
             } else {
-                if (channelID) {
-                    this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
-                }
                 this._dataVizExt.updateSurfaceShading(this.getSensorValue);
             }
         }
@@ -57,9 +63,11 @@ class HeatmapsExtension extends BaseExtension {
 
     updateChannels() {
         // We assume all active sensors share the same model
-        const firstSensor = this.dataView.getSensors().values().next().value;
-        const model = firstSensor.model;
-        this.panel.updateChannels(model.channels);
+        const sensors = Array.from(this.dataView.getSensors().values());
+        if (sensors.length === 0) {
+            return;
+        }
+        this.panel.updateChannels(sensors[0].model.channels);
     }
 
     async load() {

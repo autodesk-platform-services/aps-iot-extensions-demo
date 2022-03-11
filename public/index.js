@@ -22,20 +22,23 @@ function adjustPanelStyle(panel, { left, right, top, bottom, width, height }) {
 }
 
 async function init() {
-    /** @type {DataView} */ const dataView = new MyDataView();
+    /** @type {DataView} */ const dataView = new MyDataView({ start: new Date('2022-01-01'), end: new Date('2022-01-30') });
     /** @type {BaseExtension[]} */ const extensions = [];
 
-    async function onTimeRangeChanged(start, end) {
-        dataView.setTimerange(start, end);
+    function onTimeRangeChanged(start, end) {
+        dataView.setTimerange({ start, end });
     }
-    async function onTimeMarkerChanged(time) {
+    function onTimeMarkerChanged(time) {
         extensions.forEach(ext => ext.currentTime = time);
     }
-    async function onCurrentSensorChanged(sensorId) {
+    function onCurrentSensorChanged(sensorId) {
         extensions.forEach(ext => ext.currentSensorID = sensorId);
     }
-    async function onCurrentChannelChanged(channelId) {
+    function onCurrentChannelChanged(channelId) {
         extensions.forEach(ext => ext.currentChannelId = channelId);
+    }
+    function onLevelChanged({ target, levelIndex }) {
+        dataView.setFloor(levelIndex !== undefined ? target.floorData[levelIndex] : null);
     }
 
     await initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
@@ -55,6 +58,7 @@ async function init() {
         // Setup and auto-activate built-in viewer extensions
         const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');
         levelsExt.levelsPanel.setVisible(true);
+        levelsExt.floorSelector.addEventListener(Autodesk.AEC.FloorSelector.SELECTED_FLOOR_CHANGED, onLevelChanged);
         adjustPanelStyle(levelsExt.levelsPanel, { left: '10px', top: '10px', width: '300px', height: '300px' });
 
         onTimeRangeChanged(new Date('2022-01-01'), new Date('2022-01-30'));

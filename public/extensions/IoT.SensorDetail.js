@@ -36,7 +36,7 @@ class SensorDetailExtension extends BaseExtension {
             const sensor = sensors.get(sensorID);
             const data = historicalData.get(sensorID);
             this.panel.updateCharts(sensor, data);
-            this.panel.setTitle(`Sensor: ${sensor.name}`);
+            this.panel.setTitle(sensor ? `Sensor: ${sensor.name}` : 'Sensor Details');
         }
     }
 
