@@ -4,6 +4,10 @@ import { MyDataView } from './dataview.js';
 
 const FORGE_MODEL_URN = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGV0cmJyb3otc2FtcGxlcy9yYWNfYmFzaWNfc2FtcGxlX3Byb2plY3RfMjAyMC5ydnQ';
 const FORGE_MODEL_VIEW = 'e4baebbb-4ad6-8223-7f6a-cad4f0bb353a';
+const FORGE_MODEL_DEFAULT_FLOOR_INDEX = 2;
+const DEFAULT_TIMERANGE_START = new Date('2022-01-01');
+const DEFAULT_TIMERANGE_END = new Date('2022-01-30');
+
 const IOT_EXTENSION_IDS = ['IoT.SensorList', 'IoT.SensorDetail', 'IoT.Sprites', 'IoT.Heatmaps'];
 const IOT_PANEL_STYLES = {
     'IoT.SensorList': { right: '10px', top: '10px', width: '500px', height: '300px' },
@@ -22,7 +26,7 @@ function adjustPanelStyle(panel, { left, right, top, bottom, width, height }) {
 }
 
 async function init() {
-    /** @type {DataView} */ const dataView = new MyDataView({ start: new Date('2022-01-01'), end: new Date('2022-01-30') });
+    /** @type {DataView} */ const dataView = new MyDataView({ start: DEFAULT_TIMERANGE_START, end: DEFAULT_TIMERANGE_END });
     /** @type {BaseExtension[]} */ const extensions = [];
 
     function onTimeRangeChanged(start, end) {
@@ -55,13 +59,14 @@ async function init() {
             }
         }
 
-        // Setup and auto-activate built-in viewer extensions
+        // Setup and auto-activate other viewer extensions
         const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');
         levelsExt.levelsPanel.setVisible(true);
         levelsExt.floorSelector.addEventListener(Autodesk.AEC.FloorSelector.SELECTED_FLOOR_CHANGED, onLevelChanged);
+        levelsExt.floorSelector.selectFloor(FORGE_MODEL_DEFAULT_FLOOR_INDEX, true);
         adjustPanelStyle(levelsExt.levelsPanel, { left: '10px', top: '10px', width: '300px', height: '300px' });
 
-        onTimeRangeChanged(new Date('2022-01-01'), new Date('2022-01-30'));
+        onTimeRangeChanged(DEFAULT_TIMERANGE_START, DEFAULT_TIMERANGE_END);
         viewer.getExtension('IoT.Sprites').onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
         viewer.getExtension('IoT.Heatmaps').onChannelChanged = (channelId) => onCurrentChannelChanged(channelId);
     });
