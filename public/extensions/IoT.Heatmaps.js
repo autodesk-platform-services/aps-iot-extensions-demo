@@ -12,9 +12,16 @@ class HeatmapsExtension extends BaseExtension {
             const sensorData = historicalData.get(surfaceShadingPoint.id);
             const channel = sensor.model.channels.get(sensorType);
             const channelData = sensorData.values.get(sensorType);
-            const closestIndex = this.findNearestTimestampIndex(sensorData.timestamps, this.currentTime);
-            const value = channelData[closestIndex];
-            return (value - channel.min) / (channel.max - channel.min);
+            const fractionalIndex = this.findNearestTimestampIndex(sensorData.timestamps, this.currentTime, true);
+            const index1 = Math.floor(fractionalIndex);
+            const index2 = Math.ceil(fractionalIndex);
+            if (index1 !== index2) {
+                const value = channelData[index1] + (channelData[index2] - channelData[index1]) * (fractionalIndex - index1);
+                return (value - channel.min) / (channel.max - channel.min);
+            } else {
+                const value = channelData[index1];
+                return (value - channel.min) / (channel.max - channel.min);
+            }
         };
         this.onChannelChanged = null;
         this.updateHeatmaps = this.updateHeatmaps.bind(this);

@@ -215,7 +215,7 @@ class BaseExtension extends Autodesk.Viewing.Extension {
         }
     }
 
-    findNearestTimestampIndex(list, timestamp) {
+    findNearestTimestampIndex(list, timestamp, includeFraction) {
         let start = 0;
         let end = list.length - 1;
         if (timestamp <= list[0]) {
@@ -232,7 +232,12 @@ class BaseExtension extends Autodesk.Viewing.Extension {
                 start = currentIndex;
             }
         }
-        return (timestamp - list[start] < list[end] - timestamp) ? start : end;
+
+        if (includeFraction && start < end) {
+            return start + (timestamp - list[start]) / (list[end] - list[start]);
+        } else {
+            return (timestamp - list[start] < list[end] - timestamp) ? start : end;
+        }
     }
 
     getDefaultSensorID() {

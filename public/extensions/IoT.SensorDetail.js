@@ -140,11 +140,11 @@ class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
         for (const [channelId, values] of data.values.entries()) {
             const channel = sensor.model.channels.get(channelId);
             const canvas = document.getElementById(`sensor-detail-chart-${channelId}`);
-            this._charts.push(this._createChart(canvas, data.timestamps, values, `${channel.name} (${channel.unit})`));
+            this._charts.push(this._createChart(canvas, data.timestamps, values, channel.min, channel.max, `${channel.name} (${channel.unit})`));
         }
     }
 
-    _createChart(canvas, timestamps, values, title) {
+    _createChart(canvas, timestamps, values, min, max, title) {
         return new Chart(canvas.getContext('2d'), {
             type: 'line', // See https://www.chartjs.org/docs/latest for all the supported types of charts
             data: {
@@ -159,7 +159,9 @@ class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
                     tension: 0.1
                 }],
                 options: {
-                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min, max }
+                    }
                 }
             }
         });

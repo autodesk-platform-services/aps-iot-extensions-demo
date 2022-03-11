@@ -86,32 +86,32 @@ async function getSensorData(timerange) {
             count: 32,
             timestamps: generateTimestamps(timerange.start, timerange.end, 32),
             values: {
-                'temp': generateRandomValues(18.0, 28.0, 32),
-                'co2': generateRandomValues(540.0, 600.0, 32)
+                'temp': generateRandomValues(18.0, 28.0, 32, 1.0),
+                'co2': generateRandomValues(540.0, 600.0, 32, 5.0)
             }
         },
         'sensor-2': {
             count: 32,
             timestamps: generateTimestamps(timerange.start, timerange.end, 32),
             values: {
-                'temp': generateRandomValues(20.0, 24.0, 32),
-                'co2': generateRandomValues(540.0, 600.0, 32)
+                'temp': generateRandomValues(20.0, 24.0, 32, 1.0),
+                'co2': generateRandomValues(540.0, 600.0, 32, 5.0)
             }
         },
         'sensor-3': {
             count: 32,
             timestamps: generateTimestamps(timerange.start, timerange.end, 32),
             values: {
-                'temp': generateRandomValues(24.0, 28.0, 32),
-                'co2': generateRandomValues(500.0, 620.0, 32)
+                'temp': generateRandomValues(24.0, 28.0, 32, 1.0),
+                'co2': generateRandomValues(500.0, 620.0, 32, 5.0)
             }
         },
         'sensor-4': {
             count: 32,
             timestamps: generateTimestamps(timerange.start, timerange.end, 32),
             values: {
-                'temp': generateRandomValues(20.0, 24.0, 32),
-                'co2': generateRandomValues(600.0, 640.0, 32)
+                'temp': generateRandomValues(20.0, 24.0, 32, 1.0),
+                'co2': generateRandomValues(600.0, 640.0, 32, 5.0)
             }
         }
     };
@@ -126,10 +126,18 @@ function generateTimestamps(start, end, count) {
     return timestamps;
 }
 
-function generateRandomValues(min, max, count) {
+function generateRandomValues(min, max, count, maxDelta) {
     const values = [];
+    let lastValue = min + Math.random() * (max - min);
     for (let i = 0; i < count; i++) {
-        values.push(min + Math.random() * (max - min));
+        values.push(lastValue);
+        lastValue += (Math.random() - 0.5) * 2.0 * maxDelta;
+        if (lastValue > max) {
+            lastValue = max;
+        }
+        if (lastValue < min) {
+            lastValue = min;
+        }
     }
     return values;
 }
