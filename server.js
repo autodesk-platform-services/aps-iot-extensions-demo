@@ -24,7 +24,7 @@ app.get('/iot/sensors', async function (req, res, next) {
 
 app.get('/iot/data', async function (req, res, next) {
     try {
-        res.json(await getSensorData({ start: new Date(req.query.start), end: new Date(req.query.end) }));
+        res.json(await getSensorData({ start: new Date(req.query.start), end: new Date(req.query.end) }, req.query.resolution));
     } catch (err) {
         next(err);
     }

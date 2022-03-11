@@ -80,38 +80,38 @@ async function getSensors() {
     };
 }
 
-async function getSensorData(timerange) {
+async function getSensorData(timerange, resolution = 32) {
     return {
         'sensor-1': {
-            count: 32,
-            timestamps: generateTimestamps(timerange.start, timerange.end, 32),
+            count: resolution,
+            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
-                'temp': generateRandomValues(18.0, 28.0, 32, 1.0),
-                'co2': generateRandomValues(540.0, 600.0, 32, 5.0)
+                'temp': generateRandomValues(18.0, 28.0, resolution, 1.0),
+                'co2': generateRandomValues(540.0, 600.0, resolution, 5.0)
             }
         },
         'sensor-2': {
-            count: 32,
-            timestamps: generateTimestamps(timerange.start, timerange.end, 32),
+            count: resolution,
+            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
-                'temp': generateRandomValues(20.0, 24.0, 32, 1.0),
-                'co2': generateRandomValues(540.0, 600.0, 32, 5.0)
+                'temp': generateRandomValues(20.0, 24.0, resolution, 1.0),
+                'co2': generateRandomValues(540.0, 600.0, resolution, 5.0)
             }
         },
         'sensor-3': {
-            count: 32,
-            timestamps: generateTimestamps(timerange.start, timerange.end, 32),
+            count: resolution,
+            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
-                'temp': generateRandomValues(24.0, 28.0, 32, 1.0),
-                'co2': generateRandomValues(500.0, 620.0, 32, 5.0)
+                'temp': generateRandomValues(24.0, 28.0, resolution, 1.0),
+                'co2': generateRandomValues(500.0, 620.0, resolution, 5.0)
             }
         },
         'sensor-4': {
-            count: 32,
-            timestamps: generateTimestamps(timerange.start, timerange.end, 32),
+            count: resolution,
+            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
-                'temp': generateRandomValues(20.0, 24.0, 32, 1.0),
-                'co2': generateRandomValues(600.0, 640.0, 32, 5.0)
+                'temp': generateRandomValues(20.0, 24.0, resolution, 1.0),
+                'co2': generateRandomValues(600.0, 640.0, resolution, 5.0)
             }
         }
     };

@@ -1,7 +1,8 @@
 export class MyDataView extends DataView {
-    constructor(timerange) {
+    constructor(timerange, resolution = 32) {
         super();
         this._timerange = timerange;
+        this._resolution = resolution;
         this._floor = null;
         this._sensors = new Map();
         this._historicalData = new Map();
@@ -65,7 +66,7 @@ export class MyDataView extends DataView {
     async _loadHistoricalData() {
         try {
             const { start, end } = this._timerange;
-            const resp = await fetch(`/iot/data?start=${start.toISOString()}&end=${end.toISOString()}`);
+            const resp = await fetch(`/iot/data?start=${start.toISOString()}&end=${end.toISOString()}&resolution=${this._resolution}`);
             if (!resp.ok) {
                 throw new Error(await resp.text());
             }
