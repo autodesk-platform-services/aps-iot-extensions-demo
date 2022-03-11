@@ -1,4 +1,4 @@
-import { initViewer, loadModel } from './viewer.js';
+import { initViewer, loadModel, adjustPanelStyle } from './viewer.js';
 import { initTimeline } from './timeline.js';
 import { MyDataView } from './dataview.js';
 
@@ -15,62 +15,48 @@ const IOT_PANEL_STYLES = {
     'IoT.Heatmaps': { left: '10px', top: '320px', width: '300px', height: '150px' }
 };
 
-function adjustPanelStyle(panel, { left, right, top, bottom, width, height }) {
-    const style = panel.container.style;
-    style.setProperty('left', left ? left : 'unset');
-    style.setProperty('right', right ? right : 'unset');
-    style.setProperty('top', top ? top : 'unset');
-    style.setProperty('bottom', bottom ? bottom : 'unset');
-    style.setProperty('width', width ? width : 'unset');
-    style.setProperty('height', height ? height : 'unset');
+let dataView = new MyDataView({ start: DEFAULT_TIMERANGE_START, end: DEFAULT_TIMERANGE_END });
+let extensions = [];
+
+function onTimeRangeChanged(start, end) {
+    dataView.setTimerange({ start, end });
+}
+function onTimeMarkerChanged(time) {
+    extensions.forEach(ext => ext.currentTime = time);
+}
+function onCurrentSensorChanged(sensorId) {
+    extensions.forEach(ext => ext.currentSensorID = sensorId);
+}
+function onCurrentChannelChanged(channelId) {
+    extensions.forEach(ext => ext.currentChannelId = channelId);
+}
+function onLevelChanged({ target, levelIndex }) {
+    dataView.setFloor(levelIndex !== undefined ? target.floorData[levelIndex] : null);
 }
 
-async function init() {
-    /** @type {DataView} */ const dataView = new MyDataView({ start: DEFAULT_TIMERANGE_START, end: DEFAULT_TIMERANGE_END });
-    /** @type {BaseExtension[]} */ const extensions = [];
-
-    function onTimeRangeChanged(start, end) {
-        dataView.setTimerange({ start, end });
-    }
-    function onTimeMarkerChanged(time) {
-        extensions.forEach(ext => ext.currentTime = time);
-    }
-    function onCurrentSensorChanged(sensorId) {
-        extensions.forEach(ext => ext.currentSensorID = sensorId);
-    }
-    function onCurrentChannelChanged(channelId) {
-        extensions.forEach(ext => ext.currentChannelId = channelId);
-    }
-    function onLevelChanged({ target, levelIndex }) {
-        dataView.setFloor(levelIndex !== undefined ? target.floorData[levelIndex] : null);
-    }
-
-    await initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
-    const viewer = await initViewer(document.getElementById('preview'), IOT_EXTENSION_IDS.concat(['Autodesk.AEC.LevelsExtension']));
-    viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async function () {
-        // Setup and auto-activate IoT extensions
-        for (const extensionID of IOT_EXTENSION_IDS) {
-            const extension = viewer.getExtension(extensionID);
-            extensions.push(extension);
-            extension.dataView = dataView;
-            extension.activate();
-            if (IOT_PANEL_STYLES[extensionID]) {
-                adjustPanelStyle(extension.panel, IOT_PANEL_STYLES[extensionID]);
-            }
+initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
+const viewer = await initViewer(document.getElementById('preview'), IOT_EXTENSION_IDS.concat(['Autodesk.AEC.LevelsExtension']));
+loadModel(viewer, FORGE_MODEL_URN, FORGE_MODEL_VIEW);
+viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async function () {
+    // Setup and auto-activate IoT extensions
+    for (const extensionID of IOT_EXTENSION_IDS) {
+        const extension = viewer.getExtension(extensionID);
+        extensions.push(extension);
+        extension.dataView = dataView;
+        extension.activate();
+        if (IOT_PANEL_STYLES[extensionID]) {
+            adjustPanelStyle(extension.panel, IOT_PANEL_STYLES[extensionID]);
         }
+    }
 
-        // Setup and auto-activate other viewer extensions
-        const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');
-        levelsExt.levelsPanel.setVisible(true);
-        levelsExt.floorSelector.addEventListener(Autodesk.AEC.FloorSelector.SELECTED_FLOOR_CHANGED, onLevelChanged);
-        levelsExt.floorSelector.selectFloor(FORGE_MODEL_DEFAULT_FLOOR_INDEX, true);
-        adjustPanelStyle(levelsExt.levelsPanel, { left: '10px', top: '10px', width: '300px', height: '300px' });
+    // Setup and auto-activate other viewer extensions
+    const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');
+    levelsExt.levelsPanel.setVisible(true);
+    levelsExt.floorSelector.addEventListener(Autodesk.AEC.FloorSelector.SELECTED_FLOOR_CHANGED, onLevelChanged);
+    levelsExt.floorSelector.selectFloor(FORGE_MODEL_DEFAULT_FLOOR_INDEX, true);
+    adjustPanelStyle(levelsExt.levelsPanel, { left: '10px', top: '10px', width: '300px', height: '300px' });
 
-        onTimeRangeChanged(DEFAULT_TIMERANGE_START, DEFAULT_TIMERANGE_END);
-        viewer.getExtension('IoT.Sprites').onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
-        viewer.getExtension('IoT.Heatmaps').onChannelChanged = (channelId) => onCurrentChannelChanged(channelId);
-    });
-    loadModel(viewer, FORGE_MODEL_URN, FORGE_MODEL_VIEW);
-}
-
-init();
+    onTimeRangeChanged(DEFAULT_TIMERANGE_START, DEFAULT_TIMERANGE_END);
+    viewer.getExtension('IoT.Sprites').onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
+    viewer.getExtension('IoT.Heatmaps').onChannelChanged = (channelId) => onCurrentChannelChanged(channelId);
+});

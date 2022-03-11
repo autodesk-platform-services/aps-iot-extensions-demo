@@ -1,3 +1,5 @@
+/// import * as Autodesk from "@types/forge-viewer";
+
 /**
  * IoT sensor model ID.
  * @typedef {string} ModelID
@@ -74,17 +76,28 @@ class DataView extends EventTarget {
     }
 }
 
+/**
+ * Base viewer extension for all IoT extensions.
+ *
+ * Implements shared functionality such as toolbar UI initialization and handling of state changes.
+ */
 class BaseExtension extends Autodesk.Viewing.Extension {
     constructor(viewer, options) {
         super(viewer, options);
+        /** @type {DataView} */
         this._dataView = null;
+        /** @type {Date} */
         this._currentTime = new Date();
+        /** @type {string} */
         this._currentSensorID = null;
+        /** @type {string} */
         this._currentChannelID = null;
+        /** @type {Autodesk.DataVisualization.Core.DataVisualization} */
         this._dataVizExt = null;
+        /** @type {Autodesk.Viewing.UI.ControlGroup} */
         this._group = null;
+        /** @type {Autodesk.Viewing.UI.Button} */
         this._button = null;
-        this._panel = null;
     }
 
     get dataView() {

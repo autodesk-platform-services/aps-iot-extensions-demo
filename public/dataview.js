@@ -1,10 +1,15 @@
 export class MyDataView extends DataView {
     constructor(timerange, resolution = 32) {
         super();
+        /** @type {{ start: Date, end: Date }} */
         this._timerange = timerange;
+        /** @type {number} */
         this._resolution = resolution;
+        /** @type {{ name: string, zMin: number, zMax: number }} */
         this._floor = null;
+        /** @type {Map<SensorID, Sensor>} */
         this._sensors = new Map();
+        /** @type {Map<SensorID, HistoricalData>} */
         this._historicalData = new Map();
         this._loadSensors().then(() => this.setTimerange(this._timerange));
     }

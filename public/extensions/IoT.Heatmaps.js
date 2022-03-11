@@ -100,12 +100,14 @@ class HeatmapsExtension extends BaseExtension {
     activate() {
         super.activate();
         this.panel.setVisible(true);
+        this.onSensorsChanged();
         this.updateChannels();
     }
 
     deactivate() {
         super.deactivate();
         this.panel.setVisible(false);
+        this._dataVizExt.removeSurfaceShading();
     }
 
     onToolbarCreated() {
