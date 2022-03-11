@@ -120,24 +120,4 @@ export class MyDataView extends DataView {
             return null;
         }
     }
-
-    findNearestTimestampIndex(list, timestamp) {
-        let start = 0;
-        let end = list.length - 1;
-        if (timestamp <= list[0]) {
-            return 0;
-        }
-        if (timestamp >= list[end]) {
-            return end;
-        }
-        while (end - start > 1) {
-            let currentIndex = start + Math.floor(0.5 * (end - start));
-            if (timestamp < list[currentIndex]) {
-                end = currentIndex;
-            } else {
-                start = currentIndex;
-            }
-        }
-        return (timestamp - list[start] < list[end] - timestamp) ? start : end;
-    }
 }

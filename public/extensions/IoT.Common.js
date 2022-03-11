@@ -55,9 +55,6 @@
 const DataViewEvents = {
     SENSORS_CHANGED: 'sensors-changed',
     HISTORICAL_DATA_CHANGED: 'historical-data-changed',
-    CURRENT_TIME_CHANGED: 'current-time-changed',
-    CURRENT_SENSOR_CHANGED: 'current-sensor-changed',
-    CURRENT_CHANNEL_CHANGED: 'current-channel-changed',
     ERROR: 'error'
 };
 
@@ -89,13 +86,6 @@ class DataView {
     }
 
     /**
-     * @returns {{ start: Date, end: Date }} Current time range.
-     */
-    getTimerange() {
-        throw new Error('Not implemented');
-    }
-
-    /**
      * @returns {Map<SensorID, Sensor>} All visible sensors, indexed by sensor ID.
      */
     getSensors() {
@@ -108,33 +98,15 @@ class DataView {
     getHistoricalData() {
         throw new Error('Not implemented');
     }
-
-    /**
-     * @returns {Date} Current timestamp.
-     */
-    getCurrentTime() {
-        throw new Error('Not implemented');
-    }
-
-    /**
-     * @returns {SensorID} Current sensor ID.
-     */
-    getCurrentSensorID() {
-        throw new Error('Not implemented');
-    }
-
-    /**
-     * @returns {ChannelID} Current sensor channel ID.
-     */
-    getCurrentChannelID() {
-        throw new Error('Not implemented');
-    }
 }
 
 class BaseExtension extends Autodesk.Viewing.Extension {
     constructor(viewer, options) {
         super(viewer, options);
         this._dataView = null;
+        this._currentTime = new Date();
+        this._currentSensorID = null;
+        this._currentChannelID = null;
         this._dataVizExt = null;
         this._group = null;
         this._button = null;
@@ -145,12 +117,49 @@ class BaseExtension extends Autodesk.Viewing.Extension {
         return this._dataView;
     }
 
-    set dataView(value) {
-        this.onDataViewChanged(this._dataView, value);
-        this._dataView = value;
+    set dataView(newDataView) {
+        const oldDataView = this._dataView;
+        this._dataView = newDataView;
+        this.onDataViewChanged(oldDataView, newDataView);
     }
 
-    onDataViewChanged(oldValue, newValue) {}
+    onDataViewChanged(oldDataView, newDataView) {}
+
+    get currentTime() {
+        return this._currentTime;
+    }
+
+    set currentTime(newTime) {
+        const oldTime = this._currentTime;
+        this._currentTime = newTime;
+        this.onCurrentTimeChanged(oldTime, newTime);
+    }
+
+    onCurrentTimeChanged(oldTime, newTime) {}
+
+    get currentSensorID() {
+        return this._currentSensorID;
+    }
+
+    set currentSensorID(newSensorID) {
+        const oldSensorID = this._currentSensorID;
+        this._currentSensorID = newSensorID;
+        this.onCurrentSensorChanged(oldSensorID, newSensorID);
+    }
+
+    onCurrentSensorChanged(oldSensorID, newSensorID) {}
+
+    get currentChannelID() {
+        return this._currentChannelID;
+    }
+
+    set currentChannelID(newChannelID) {
+        const oldChannelID = this._currentChannelID;
+        this._currentChannelID = newChannelID;
+        this.onCurrentChannelIDChanged(oldChannelID, newChannelID);
+    }
+
+    onCurrentChannelChanged(oldChannelID, newChannelID) {}
 
     async load() {
         this._dataVizExt = await this.viewer.loadExtension('Autodesk.DataVisualization');
@@ -204,5 +213,37 @@ class BaseExtension extends Autodesk.Viewing.Extension {
             this._button = null;
             this._group = null;
         }
+    }
+
+    findNearestTimestampIndex(list, timestamp) {
+        let start = 0;
+        let end = list.length - 1;
+        if (timestamp <= list[0]) {
+            return 0;
+        }
+        if (timestamp >= list[end]) {
+            return end;
+        }
+        while (end - start > 1) {
+            let currentIndex = start + Math.floor(0.5 * (end - start));
+            if (timestamp < list[currentIndex]) {
+                end = currentIndex;
+            } else {
+                start = currentIndex;
+            }
+        }
+        return (timestamp - list[start] < list[end] - timestamp) ? start : end;
+    }
+
+    getDefaultSensorID() {
+        const sensorIDs = Array.from(this.dataView.getSensors().keys());
+        return sensorIDs[0];
+    }
+
+    getDefaultChannelID() {
+        const defaultSensorID = this.getDefaultSensorID();
+        const defaultSensor = this.dataView.getSensors().get(defaultSensorID);
+        const channelIds = Array.from(defaultSensor.model.channels.keys());
+        return channelIds[0];
     }
 }

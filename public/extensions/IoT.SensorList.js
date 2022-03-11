@@ -11,21 +11,19 @@ class SensorListExtension extends BaseExtension {
         if (oldDataView) {
             oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.update);
             oldDataView.removeEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.update);
-            oldDataView.removeEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.update);
         }
         if (newDataView) {
             newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.update);
             newDataView.addEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.update);
-            newDataView.addEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.update);
         }
     }
 
+    onCurrentTimeChanged(oldTime, newTime) {
+        this.update();
+    }
+
     update() {
-        this.panel.update(
-            this.dataView.getSensors(),
-            this.dataView.getHistoricalData(),
-            this.dataView.getCurrentTime()
-        );
+        this.panel.update(this.dataView.getSensors(), this.dataView.getHistoricalData(), this.currentTime);
     }
 
     async load() {
@@ -85,7 +83,7 @@ class SensorListPanel extends Autodesk.Viewing.UI.PropertyPanel {
                 if (!channelData) {
                     return;
                 }
-                const closestIndex = this._findNearestTimestampIndex(sensorData.timestamps, timestamp);
+                const closestIndex = this._findNearestTimestampIndex(sensorData.timestamps, timestamp); // TODO: reuse this code from BaseExtension
                 this.addProperty(channel.name, `${channelData[closestIndex].toFixed(2)} ${channel.unit}`, sensor.name);
             }
         }

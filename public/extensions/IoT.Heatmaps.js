@@ -12,8 +12,7 @@ class HeatmapsExtension extends BaseExtension {
             const sensorData = historicalData.get(surfaceShadingPoint.id);
             const channel = sensor.model.channels.get(sensorType);
             const channelData = sensorData.values.get(sensorType);
-            const currentTimestamp = this.dataView.getCurrentTime();
-            const closestIndex = this.dataView.findNearestTimestampIndex(sensorData.timestamps, currentTimestamp);
+            const closestIndex = this.findNearestTimestampIndex(sensorData.timestamps, this.currentTime);
             const value = channelData[closestIndex];
             return (value - channel.min) / (channel.max - channel.min);
         };
@@ -25,27 +24,31 @@ class HeatmapsExtension extends BaseExtension {
     onDataViewChanged(oldDataView, newDataView) {
         if (oldDataView) {
             oldDataView.removeEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateHeatmaps);
-            oldDataView.removeEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateHeatmaps);
-            oldDataView.removeEventListener(DataViewEvents.CURRENT_CHANNEL_CHANGED, this.updateHeatmaps);
             oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.updateChannels);
         }
         if (newDataView) {
             newDataView.addEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateHeatmaps);
-            newDataView.addEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateHeatmaps);
-            newDataView.addEventListener(DataViewEvents.CURRENT_CHANNEL_CHANGED, this.updateHeatmaps);
             newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.updateChannels);
         }
     }
 
+    onCurrentTimeChanged(oldTime, newTime) {
+        this.updateHeatmaps();
+    }
+
+    onCurrentChannelChanged(oldChannelID, newChannelID) {
+        this.updateHeatmaps();
+    }
+
     async updateHeatmaps() {
-        const currentChannelID = this.dataView.getCurrentChannelID();
-        if (this.isActive() && currentChannelID) {
+        if (this.isActive()) {
+            const channelID = this.currentChannelID || this.getDefaultChannelID();
             if (!this._surfaceShadingData) {
                 await this._setupSurfaceShading(this.viewer.model);
-                this._dataVizExt.renderSurfaceShading('iot-heatmap', currentChannelID, this.getSensorValue);
+                this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
             } else {
-                if (currentChannelID) {
-                    this._dataVizExt.renderSurfaceShading('iot-heatmap', currentChannelID, this.getSensorValue);
+                if (channelID) {
+                    this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
                 }
                 this._dataVizExt.updateSurfaceShading(this.getSensorValue);
             }
@@ -53,8 +56,9 @@ class HeatmapsExtension extends BaseExtension {
     }
 
     updateChannels() {
-        const sensors = Array.from(this.dataView.getSensors().values());
-        const model = sensors[0].model;
+        // We assume all active sensors share the same model
+        const firstSensor = this.dataView.getSensors().values().next().value;
+        const model = firstSensor.model;
         this.panel.updateChannels(model.channels);
     }
 

@@ -13,24 +13,28 @@ class SensorDetailExtension extends BaseExtension {
         if (oldDataView) {
             oldDataView.removeEventListener(DataViewEvents.SENSORS_CHANGED, this.updateCharts);
             oldDataView.removeEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateCharts);
-            oldDataView.removeEventListener(DataViewEvents.CURRENT_SENSOR_CHANGED, this.updateCharts);
-            oldDataView.removeEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateCursor);
         }
         if (newDataView) {
             newDataView.addEventListener(DataViewEvents.SENSORS_CHANGED, this.updateCharts);
             newDataView.addEventListener(DataViewEvents.HISTORICAL_DATA_CHANGED, this.updateCharts);
-            newDataView.addEventListener(DataViewEvents.CURRENT_SENSOR_CHANGED, this.updateCharts);
-            newDataView.addEventListener(DataViewEvents.CURRENT_TIME_CHANGED, this.updateCursor);
         }
+    }
+
+    onCurrentTimeChanged(oldTime, newTime) {
+        this.updateCursor();
+    }
+
+    onCurrentSensorChanged(oldSensorID, newSensorID) {
+        this.updateCharts();
     }
 
     updateCharts() {
         const sensors = this.dataView.getSensors();
         const historicalData = this.dataView.getHistoricalData();
-        const currentSensorID = this.dataView.getCurrentSensorID();
-        if (sensors && historicalData && currentSensorID) {
-            const sensor = sensors.get(currentSensorID);
-            const data = historicalData.get(currentSensorID);
+        const sensorID = this.currentSensorID || this.getDefaultSensorID();
+        if (sensors && historicalData) {
+            const sensor = sensors.get(sensorID);
+            const data = historicalData.get(sensorID);
             this.panel.updateCharts(sensor, data);
             this.panel.setTitle(`Sensor: ${sensor.name}`);
         }
@@ -38,10 +42,9 @@ class SensorDetailExtension extends BaseExtension {
 
     updateCursor() {
         const historicalData = this.dataView.getHistoricalData();
-        const currentSensorID = this.dataView.getCurrentSensorID();
-        const currentTimestamp = this.dataView.getCurrentTime();
-        const sensorData = historicalData.get(currentSensorID);
-        const sampleIndex = this.dataView.findNearestTimestampIndex(sensorData.timestamps, currentTimestamp);
+        const sensorID = this.currentSensorID || this.getDefaultSensorID();
+        const sensorData = historicalData.get(sensorID);
+        const sampleIndex = this.findNearestTimestampIndex(sensorData.timestamps, this.currentTime);
         this.panel.updateCursor(sampleIndex);
     }
 
