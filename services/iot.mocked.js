@@ -21,6 +21,15 @@ const MODELS = {
                 unit: 'ppm',
                 min: 482.81,
                 max: 640.00
+            },
+            'light': {
+                id: 'light',
+                name: 'Lighting',
+                desc: 'Level of lighting.',
+                type: 'double',
+                unit: 'Lux',
+                min: 0.0,
+                max: 1000.0
             }
         }
     }
@@ -87,7 +96,8 @@ async function getSensorData(timerange, resolution = 32) {
             timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
                 'temp': generateRandomValues(18.0, 28.0, resolution, 1.0),
-                'co2': generateRandomValues(540.0, 600.0, resolution, 5.0)
+                'co2': generateRandomValues(540.0, 600.0, resolution, 5.0),
+                'light': generateRandomValues(50.0, 150.0, resolution, 10.0)
             }
         },
         'sensor-2': {
@@ -95,7 +105,8 @@ async function getSensorData(timerange, resolution = 32) {
             timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
                 'temp': generateRandomValues(20.0, 24.0, resolution, 1.0),
-                'co2': generateRandomValues(540.0, 600.0, resolution, 5.0)
+                'co2': generateRandomValues(540.0, 600.0, resolution, 5.0),
+                'light': generateRandomValues(50.0, 150.0, resolution, 10.0)
             }
         },
         'sensor-3': {
@@ -103,7 +114,8 @@ async function getSensorData(timerange, resolution = 32) {
             timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
                 'temp': generateRandomValues(24.0, 28.0, resolution, 1.0),
-                'co2': generateRandomValues(500.0, 620.0, resolution, 5.0)
+                'co2': generateRandomValues(500.0, 620.0, resolution, 5.0),
+                'light': generateRandomValues(50.0, 150.0, resolution, 10.0)
             }
         },
         'sensor-4': {
@@ -111,7 +123,8 @@ async function getSensorData(timerange, resolution = 32) {
             timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
             values: {
                 'temp': generateRandomValues(20.0, 24.0, resolution, 1.0),
-                'co2': generateRandomValues(600.0, 640.0, resolution, 5.0)
+                'co2': generateRandomValues(600.0, 640.0, resolution, 5.0),
+                'light': generateRandomValues(50.0, 150.0, resolution, 10.0)
             }
         }
     };
