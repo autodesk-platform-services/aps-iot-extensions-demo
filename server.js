@@ -1,6 +1,6 @@
 const express = require('express');
 const { getPublicToken } = require('./services/forge.js');
-const { getSensors, getSensorData } = require('./services/iot.mocked.js');
+const { getSensors, getChannels, getSensorData } = require('./services/iot.mocked.js');
 const { PORT } = require('./config.js');
 
 let app = express();
@@ -17,6 +17,14 @@ app.get('/auth/token', async function (req, res, next) {
 app.get('/iot/sensors', async function (req, res, next) {
     try {
         res.json(await getSensors());
+    } catch (err) {
+        next(err);
+    }
+});
+
+app.get('/iot/channels', async function (req, res, next) {
+    try {
+        res.json(await getChannels());
     } catch (err) {
         next(err);
     }

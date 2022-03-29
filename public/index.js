@@ -8,30 +8,37 @@ const FORGE_MODEL_DEFAULT_FLOOR_INDEX = 2;
 const DEFAULT_TIMERANGE_START = new Date('2022-01-01');
 const DEFAULT_TIMERANGE_END = new Date('2022-01-30');
 
-const IOT_EXTENSION_IDS = ['IoT.SensorList', 'IoT.SensorDetail', 'IoT.Sprites', 'IoT.Heatmaps'];
+const IOT_EXTENSION_IDS = ['IoT.SensorList', 'IoT.SensorDetail', 'IoT.SensorSprites', 'IoT.SensorHeatmaps'];
 const IOT_PANEL_STYLES = {
     'IoT.SensorList': { right: '10px', top: '10px', width: '500px', height: '300px' },
     'IoT.SensorDetail': { right: '10px', top: '320px', width: '500px', height: '300px' },
-    'IoT.Heatmaps': { left: '10px', top: '320px', width: '300px', height: '150px' }
+    'IoT.SensorHeatmaps': { left: '10px', top: '320px', width: '300px', height: '150px' }
 };
 
-let dataView = new MyDataView({ start: DEFAULT_TIMERANGE_START, end: DEFAULT_TIMERANGE_END });
+let dataView = new MyDataView();
+await dataView.init({ start: DEFAULT_TIMERANGE_START, end: DEFAULT_TIMERANGE_END });
 let extensions = [];
 
-function onTimeRangeChanged(start, end) {
-    dataView.setTimerange({ start, end });
+async function onTimeRangeChanged(start, end) {
+    await dataView.refresh({ start, end });
+    extensions.forEach(ext => ext.dataView = dataView);
+}
+function onLevelChanged({ target, levelIndex }) {
+    dataView.floor = levelIndex !== undefined ? target.floorData[levelIndex] : null;
+    extensions.forEach(ext => ext.dataView = dataView);
 }
 function onTimeMarkerChanged(time) {
     extensions.forEach(ext => ext.currentTime = time);
 }
 function onCurrentSensorChanged(sensorId) {
+    const sensor = dataView.sensors.get(sensorId);
+    if (sensor && sensor.objectId) {
+        viewer.fitToView([sensor.objectId]);
+    }
     extensions.forEach(ext => ext.currentSensorID = sensorId);
 }
 function onCurrentChannelChanged(channelId) {
-    extensions.forEach(ext => ext.currentChannelId = channelId);
-}
-function onLevelChanged({ target, levelIndex }) {
-    dataView.setFloor(levelIndex !== undefined ? target.floorData[levelIndex] : null);
+    extensions.forEach(ext => ext.currentChannelID = channelId);
 }
 
 initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
@@ -57,6 +64,7 @@ viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async function (
     adjustPanelStyle(levelsExt.levelsPanel, { left: '10px', top: '10px', width: '300px', height: '300px' });
 
     onTimeRangeChanged(DEFAULT_TIMERANGE_START, DEFAULT_TIMERANGE_END);
-    viewer.getExtension('IoT.Sprites').onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
-    viewer.getExtension('IoT.Heatmaps').onChannelChanged = (channelId) => onCurrentChannelChanged(channelId);
+    viewer.getExtension('IoT.SensorList').onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
+    viewer.getExtension('IoT.SensorSprites').onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
+    viewer.getExtension('IoT.SensorHeatmaps').onChannelChanged = (channelId) => onCurrentChannelChanged(channelId);
 });

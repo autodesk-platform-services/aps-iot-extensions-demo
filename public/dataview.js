@@ -1,91 +1,105 @@
-export class MyDataView extends DataView {
-    constructor(timerange, resolution = 32) {
-        super();
-        /** @type {{ start: Date, end: Date }} */
-        this._timerange = timerange;
-        /** @type {number} */
-        this._resolution = resolution;
-        /** @type {{ name: string, zMin: number, zMax: number }} */
+export class MyDataView {
+    constructor() {
         this._floor = null;
-        /** @type {Map<SensorID, Sensor>} */
         this._sensors = new Map();
-        /** @type {Map<SensorID, HistoricalData>} */
-        this._historicalData = new Map();
-        this._loadSensors().then(() => this.setTimerange(this._timerange));
+        this._channels = new Map();
+        this._data = null;
+        this._sensorsFilteredByFloor = null;
     }
 
-    setTimerange(timerange) {
-        this._timerange = timerange;
-        this._loadHistoricalData();
-    }
-
-    getTimerange() {
-        return this._timerange;
-    }
-
-    setFloor(floor) {
-        this._floor = floor;
-        this.dispatchEvent(new Event(DataViewEvents.SENSORS_CHANGED, {}));
-    }
-
-    getFloor() {
-        return this._floor;
-    }
-
-    getSensors() {
-        if (this._floor) {
-            const { zMin, zMax } = this._floor;
-            return this._sensors.filter(sensor => sensor.location.z >= zMin && sensor.location.z <= zMax);
-        } else {
-            return this._sensors;
+    async _fetch(url) {
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            throw new Error(await resp.text());
         }
-    }
-
-    getHistoricalData() {
-        return this._historicalData;
+        const json = await resp.json();
+        return json;
     }
 
     async _loadSensors() {
-        try {
-            const resp = await fetch('/iot/sensors');
-            if (!resp.ok) {
-                throw new Error(await resp.text());
-            }
-            const json = await resp.json();
-            const models = new Map(Object.entries(json.models));
-            for (const model of models.values()) {
-                model.channels = new Map(Object.entries(model.channels));
-            }
-            const sensors = new Map(Object.entries(json.sensors));
-            for (const sensor of sensors.values()) {
-                sensor.model = models.get(sensor.model_id);
-            }
-            this._sensors = sensors;
-            this.dispatchEvent(new Event(DataViewEvents.SENSORS_CHANGED, {}));
-        } catch (err) {
-            console.error(err);
-            this.dispatchEvent(new Event(DataViewEvents.ERROR, { err }));
+        this._sensors.clear();
+        const json = await this._fetch('/iot/sensors');
+        for (const [sensorId, sensor] of Object.entries(json)) {
+            this._sensors.set(sensorId, sensor);
+        }
+        this._sensorsFilteredByFloor = null;
+    }
+
+    async _loadChannels() {
+        this._channels.clear();
+        const json = await this._fetch('/iot/channels');
+        for (const [channelId, channel] of Object.entries(json)) {
+            this._channels.set(channelId, channel);
         }
     }
 
-    async _loadHistoricalData() {
+    async _loadSamples(timerange, resolution) {
+        const { start, end } = timerange;
+        const json = await this._fetch(`/iot/data?start=${start.toISOString()}&end=${end.toISOString()}&resolution=${resolution}`)
+        for (const [_, data] of Object.entries(json)) {
+            data.timestamps = data.timestamps.map(str => new Date(str));
+        }
+        this._data = json;
+    }
+
+    async init(timerange, resolution = 32) {
         try {
-            const { start, end } = this._timerange;
-            const resp = await fetch(`/iot/data?start=${start.toISOString()}&end=${end.toISOString()}&resolution=${this._resolution}`);
-            if (!resp.ok) {
-                throw new Error(await resp.text());
-            }
-            const json = await resp.json();
-            const data = new Map(Object.entries(json));
-            for (const sensorData of data.values()) {
-                sensorData.timestamps = sensorData.timestamps.map(str => new Date(str));
-                sensorData.values = new Map(Object.entries(sensorData.values));
-            }
-            this._historicalData = data;
-            this.dispatchEvent(new Event(DataViewEvents.HISTORICAL_DATA_CHANGED, {}));
+            await Promise.all([
+                this._loadSensors(),
+                this._loadChannels(),
+                this._loadSamples(timerange, resolution)
+            ]);
         } catch (err) {
             console.error(err);
-            this.dispatchEvent(new Event(DataViewEvents.ERROR, { err }));
+        }
+    }
+
+    async refresh(timerange, resolution = 32) {
+        try {
+            await this._loadSamples(timerange, resolution);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    get floor() {
+        return this._floor;
+    }
+
+    set floor(floor) {
+        this._floor = floor;
+        this._sensorsFilteredByFloor = null;
+    }
+
+    get sensors() {
+        if (!this._sensorsFilteredByFloor) {
+            this._sensorsFilteredByFloor = new Map();
+            for (const [sensorId, sensor] of this._sensors.entries()) {
+                if (!this._floor || (sensor.location.z >= this._floor.zMin && sensor.location.z <= this._floor.zMax)) {
+                    this._sensorsFilteredByFloor.set(sensorId, sensor);
+                }
+            }
+        }
+        return this._sensorsFilteredByFloor;
+    }
+
+    get channels() {
+        return this._channels;
+    }
+
+    getSamples(sensorId, channelId) {
+        const sensorData = this._data[sensorId];
+        if (!sensorData) {
+            return null;
+        }
+        const channelData = sensorData.values[channelId];
+        if (!channelData) {
+            return null;
+        }
+        return {
+            count: sensorData.count,
+            timestamps: sensorData.timestamps,
+            values: channelData
         }
     }
 }

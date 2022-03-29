@@ -19,5 +19,6 @@ Live demo: https://forge-iot-example.herokuapp.com
 with your own model URN and view GUID
 - In [./services/iot.mocked.js](./services/iot.mocked.js), modify the mocked up sensors,
 for example, changing their `location` (XYZ position in the model's coordinate system)
-or `surfaceDbId` (the dbID of the room the sensor should be associated with)
-- Run the app: `yarn start`, and go to http://localhost:3000
+or `objectId` (the dbID of the room the sensor should be associated with)
+- Run the app: `yarn start`
+- Go to http://localhost:3000

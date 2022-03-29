@@ -1,83 +1,77 @@
 // This mocked up IoT data is setup for the rac_basic_sample_project.rvt sample design.
 
-const MODELS = {
-    'hmc-1': {
-        name: 'Human Comfort Sensor',
-        desc: 'Monitors indoor air quality by measuring levels of Carbon Dioxide (CO2), temperature, and humidity.',
-        channels: {
-            'temp': {
-                name: 'Temperature',
-                desc: 'External temperature in degrees Celsius.',
-                type: 'double',
-                unit: '°C',
-                min: 18.0,
-                max: 28.0
-            },
-            'co2': {
-                id: 'co2',
-                name: 'CO₂',
-                desc: 'Level of carbon dioxide.',
-                type: 'double',
-                unit: 'ppm',
-                min: 482.81,
-                max: 640.00
-            }
-        }
-    }
-};
-
 const SENSORS = {
     'sensor-1': {
-        model_id: 'hmc-1',
         name: 'Living Room',
-        desc: 'Basic sensor in the middle of the living room.',
+        description: 'Basic sensor in the middle of the living room.',
+        groupName: 'Level 1',
         location: {
             x: 31.92,
             y: 11.49,
             z: -12.97
         },
-        surfaceDbId: 4124
+        objectId: 4124
     },
     'sensor-2': {
-        model_id: 'hmc-1',
         name: 'Dining Table',
-        desc: 'Basic sensor at the dining table.',
+        description: 'Basic sensor at the dining table.',
+        groupName: 'Level 1',
         location: {
             x: -10,
             y: 41.64,
             z: -12.15
         },
-        surfaceDbId: 4111
+        objectId: 4111
     },
     'sensor-3': {
-        model_id: 'hmc-1',
         name: 'Kitchen',
-        desc: 'Basic sensor in the kitchen.',
+        description: 'Basic sensor in the kitchen.',
+        groupName: 'Level 1',
         location: {
             x: 10,
             y: 41.64,
             z: -12.15
         },
-        surfaceDbId: 4111
+        objectId: 4111
     },
     'sensor-4': {
-        model_id: 'hmc-1',
         name: 'Bedroom',
-        desc: 'Basic sensor in the bedroom.',
+        description: 'Basic sensor in the bedroom.',
+        groupName: 'Level 2',
         location: {
             x: -7.46,
             y: 41.47,
             z: 2.97
         },
-        surfaceDbId: 4085
+        objectId: 4085
+    }
+};
+
+const CHANNELS = {
+    'temp': {
+        name: 'Temperature',
+        description: 'External temperature in degrees Celsius.',
+        type: 'double',
+        unit: '°C',
+        min: 18.0,
+        max: 28.0
+    },
+    'co2': {
+        name: 'CO₂',
+        description: 'Level of carbon dioxide.',
+        type: 'double',
+        unit: 'ppm',
+        min: 482.81,
+        max: 640.00
     }
 };
 
 async function getSensors() {
-    return {
-        models: MODELS,
-        sensors: SENSORS
-    };
+    return SENSORS;
+}
+
+async function getChannels() {
+    return CHANNELS;
 }
 
 async function getSensorData(timerange, resolution = 32) {
@@ -144,5 +138,6 @@ function generateRandomValues(min, max, count, maxDelta) {
 
 module.exports = {
     getSensors,
+    getChannels,
     getSensorData
 };
