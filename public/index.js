@@ -31,7 +31,7 @@ function onTimeMarkerChanged(time) {
     extensions.forEach(ext => ext.currentTime = time);
 }
 function onCurrentSensorChanged(sensorId) {
-    const sensor = dataView.sensors.get(sensorId);
+    const sensor = dataView.getSensors().get(sensorId);
     if (sensor && sensor.objectId) {
         viewer.fitToView([sensor.objectId]);
     }

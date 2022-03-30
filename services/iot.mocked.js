@@ -74,36 +74,24 @@ async function getChannels() {
     return CHANNELS;
 }
 
-async function getSensorData(timerange, resolution = 32) {
+async function getSamples(timerange, resolution = 32) {
     return {
-        'sensor-1': {
-            count: resolution,
-            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
-            values: {
+        count: resolution,
+        timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
+        data: {
+            'sensor-1': {
                 'temp': generateRandomValues(18.0, 28.0, resolution, 1.0),
                 'co2': generateRandomValues(540.0, 600.0, resolution, 5.0)
-            }
-        },
-        'sensor-2': {
-            count: resolution,
-            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
-            values: {
+            },
+            'sensor-2': {
                 'temp': generateRandomValues(20.0, 24.0, resolution, 1.0),
                 'co2': generateRandomValues(540.0, 600.0, resolution, 5.0)
-            }
-        },
-        'sensor-3': {
-            count: resolution,
-            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
-            values: {
+            },
+            'sensor-3': {
                 'temp': generateRandomValues(24.0, 28.0, resolution, 1.0),
                 'co2': generateRandomValues(500.0, 620.0, resolution, 5.0)
-            }
-        },
-        'sensor-4': {
-            count: resolution,
-            timestamps: generateTimestamps(timerange.start, timerange.end, resolution),
-            values: {
+            },
+            'sensor-4': {
                 'temp': generateRandomValues(20.0, 24.0, resolution, 1.0),
                 'co2': generateRandomValues(600.0, 640.0, resolution, 5.0)
             }
@@ -139,5 +127,5 @@ function generateRandomValues(min, max, count, maxDelta) {
 module.exports = {
     getSensors,
     getChannels,
-    getSensorData
+    getSamples
 };

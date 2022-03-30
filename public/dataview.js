@@ -1,9 +1,11 @@
 export class MyDataView {
     constructor() {
-        this._floor = null;
+        this._timerange = [new Date(), new Date()];
+        this._timestamps = [];
         this._sensors = new Map();
         this._channels = new Map();
         this._data = null;
+        this._floor = null;
         this._sensorsFilteredByFloor = null;
     }
 
@@ -35,11 +37,11 @@ export class MyDataView {
 
     async _loadSamples(timerange, resolution) {
         const { start, end } = timerange;
-        const json = await this._fetch(`/iot/data?start=${start.toISOString()}&end=${end.toISOString()}&resolution=${resolution}`)
-        for (const [_, data] of Object.entries(json)) {
-            data.timestamps = data.timestamps.map(str => new Date(str));
-        }
-        this._data = json;
+        this._timerange[0] = start;
+        this._timerange[1] = end;
+        const { timestamps, data } = await this._fetch(`/iot/samples?start=${start.toISOString()}&end=${end.toISOString()}&resolution=${resolution}`)
+        this._timestamps = timestamps.map(str => new Date(str));
+        this._data = data;
     }
 
     async init(timerange, resolution = 32) {
@@ -71,7 +73,7 @@ export class MyDataView {
         this._sensorsFilteredByFloor = null;
     }
 
-    get sensors() {
+    getSensors() {
         if (!this._sensorsFilteredByFloor) {
             this._sensorsFilteredByFloor = new Map();
             for (const [sensorId, sensor] of this._sensors.entries()) {
@@ -83,23 +85,18 @@ export class MyDataView {
         return this._sensorsFilteredByFloor;
     }
 
-    get channels() {
-        return this._channels;
-    }
+    getChannels() { return this._channels; }
+
+    getTimerange() { return this._timerange; }
 
     getSamples(sensorId, channelId) {
-        const sensorData = this._data[sensorId];
-        if (!sensorData) {
-            return null;
-        }
-        const channelData = sensorData.values[channelId];
-        if (!channelData) {
+        if (!this._data[sensorId] || !this._data[sensorId][channelId]) {
             return null;
         }
         return {
-            count: sensorData.count,
-            timestamps: sensorData.timestamps,
-            values: channelData
+            count: this._timestamps.length,
+            timestamps: this._timestamps,
+            values: this._data[sensorId][channelId]
         }
     }
 }
