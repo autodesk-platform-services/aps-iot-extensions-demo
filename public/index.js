@@ -1,3 +1,4 @@
+import 'https://unpkg.com/forge-iot-extensions@0.0.5/dist/index.js';
 import { initViewer, loadModel, adjustPanelStyle } from './viewer.js';
 import { initTimeline } from './timeline.js';
 import { MyDataView } from './dataview.js';
