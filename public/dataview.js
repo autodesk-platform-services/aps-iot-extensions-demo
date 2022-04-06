@@ -21,7 +21,9 @@ export class MyDataView {
     async _loadSensors() {
         this._sensors.clear();
         const json = await this._fetch('/iot/sensors');
-        for (const [sensorId, sensor] of Object.entries(json)) {
+        for (let index in json) {
+            const sensor = json[index];
+            const sensorId = sensor.code;
             this._sensors.set(sensorId, sensor);
         }
         this._sensorsFilteredByFloor = null;
@@ -30,7 +32,9 @@ export class MyDataView {
     async _loadChannels() {
         this._channels.clear();
         const json = await this._fetch('/iot/channels');
-        for (const [channelId, channel] of Object.entries(json)) {
+        for (let index in json) {
+            const channel = json[index];
+            const channelId = channel.code;
             this._channels.set(channelId, channel);
         }
     }
