@@ -1,23 +1,16 @@
-const jsonServer = require('json-server');
 const path = require('path');
-
-const routes = require('./services/routes.json');
-const dbFile = path.join(__dirname, './services/db.json');
-const foreignKeySuffix = '_id';
-const router = jsonServer.router(dbFile, { foreignKeySuffix });
-const defaultsOpts = {
-    static: path.join(process.cwd(), './public'),
-    bodyParser: true
-};
-const middlewares = jsonServer.defaults(defaultsOpts);
-const rewriter = jsonServer.rewriter(routes);
-
-const app = jsonServer.create();
-app.use(middlewares);
-
+const jsonServer = require('json-server');
 const { getPublicToken } = require('./services/forge.js');
 const { getSamples } = require('./services/iot.mocked.js');
 const { PORT } = require('./config.js');
+
+const router = jsonServer.router(path.join(__dirname, './services/db.json'), { foreignKeySuffix: '_id' });
+
+const app = jsonServer.create();
+app.use(jsonServer.defaults({
+    static: path.join(__dirname, './public'),
+    bodyParser: true
+}));
 
 app.get('/auth/token', async function (req, res, next) {
     try {
@@ -29,24 +22,23 @@ app.get('/auth/token', async function (req, res, next) {
 
 app.get('/iot/samples', async function (req, res, next) {
     try {
-        const lowdb = router.db;
-        const sensors = lowdb.get('sensors').value();
-
-        res.json(await getSamples(sensors, { start: new Date(req.query.start), end: new Date(req.query.end) }, req.query.resolution));
+        const { start, end, resolution } = req.query;
+        if (!start || !end || !resolution) {
+            throw new Error('Missing some of the required parameters: "start", "end", "resolution".');
+        }
+        const sensors = router.db.get('sensors').value();
+        res.json(await getSamples(sensors, { start: new Date(start), end: new Date(end) }, resolution));
     } catch (err) {
         next(err);
     }
 });
 
+app.use(jsonServer.rewriter({ '/iot/*': '/$1' }));
+app.use(router);
+
 app.use((err, req, res, next) => {
-    if (!err) {
-        next();
-    } else {
-        console.error(err);
-        res.status(500).send(err.message);
-    }
+    console.error(err);
+    res.status(500).send(err.message);
 });
 
-app.use(rewriter);
-app.use(router);
 app.listen(PORT, function () { console.log(`Server listening on port ${PORT}...`); });
