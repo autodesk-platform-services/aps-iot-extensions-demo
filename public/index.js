@@ -2,6 +2,7 @@ import 'https://unpkg.com/forge-iot-extensions@0.0.5/dist/index.js';
 import { initViewer, loadModel, adjustPanelStyle } from './viewer.js';
 import { initTimeline } from './timeline.js';
 import { MyDataView } from './dataview.js';
+import './sensormanager.js';
 
 const FORGE_MODEL_URN = 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cGV0cmJyb3otc2FtcGxlcy9yYWNfYmFzaWNfc2FtcGxlX3Byb2plY3RfMjAyMC5ydnQ';
 const FORGE_MODEL_VIEW = 'e4baebbb-4ad6-8223-7f6a-cad4f0bb353a';
@@ -43,7 +44,7 @@ function onCurrentChannelChanged(channelId) {
 }
 
 initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
-const viewer = await initViewer(document.getElementById('preview'), IOT_EXTENSION_IDS.concat(['Autodesk.AEC.LevelsExtension']));
+const viewer = await initViewer(document.getElementById('preview'), IOT_EXTENSION_IDS.concat(['Iot.SensorManager', 'Autodesk.AEC.LevelsExtension']));
 loadModel(viewer, FORGE_MODEL_URN, FORGE_MODEL_VIEW);
 viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async function () {
     // Setup and auto-activate IoT extensions
@@ -56,6 +57,27 @@ viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async function (
             adjustPanelStyle(extension.panel, IOT_PANEL_STYLES[extensionID]);
         }
     }
+
+    const sensorMgrExt = viewer.getExtension('Iot.SensorManager');
+    sensorMgrExt.onSensorAdded = async (data) => {
+        await dataView.addSensors(data);
+
+        let timeRange = dataView.getTimerange();
+        await dataView.refresh({ start: timeRange[0], end: timeRange[1] });
+
+        extensions.forEach(ext => ext.dataView = dataView);
+    };
+    sensorMgrExt.onSensorDeleted = async (sensorId) => {
+        await dataView.deleteSensors(sensorId);
+
+        let timeRange = dataView.getTimerange();
+        await dataView.refresh({ start: timeRange[0], end: timeRange[1] });
+
+        extensions.forEach(ext => {
+            ext.dataView = dataView;
+            ext.currentSensorID = null;
+        });
+    };
 
     // Setup and auto-activate other viewer extensions
     const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');
