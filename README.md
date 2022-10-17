@@ -5,7 +5,7 @@ Example [Autodesk Forge](https://forge.autodesk.com) application using
 [Data Visualization Extensions](https://forge.autodesk.com/en/docs/dataviz/v1/developers_guide/introduction))
 to display historical IoT data in a BIM model.
 
-Live demo: https://forge-iot-example.herokuapp.com
+Live demo: https://forge-iot-extensions-demo.autodesk.io
 
 ![Screenshot](./screenshot.png)
 
