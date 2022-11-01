@@ -8,7 +8,7 @@ function debounce(func, timeout = 500) {
 
 export function initTimeline(container, onTimeRangeChanged, onTimeMarkerChanged) {
     return new Promise(function (resolve, reject) {
-        let timeslider = new ChronosEtu.TimeSlider(container.clientWidth, container.clientHeight, '2022-01-01', '2022-02-01');
+        let timeslider = new ChronosEtu.TimeSlider(container.clientWidth, container.clientHeight, '2022-10-01', '2022-12-01');
         window.addEventListener('resize', () => {
             const { clientWidth, clientHeight } = container;
             timeslider.resize(clientWidth, clientHeight);

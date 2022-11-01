@@ -20,49 +20,45 @@ export class MyDataView {
 
     async _loadSensors() {
         this._sensors.clear();
-        const json = await this._fetch('/iot/sensors');
-        for (let index in json) {
-            const sensor = json[index];
-            const sensorId = sensor.code;
-            this._sensors.set(sensorId, sensor);
+        const sensors = await this._fetch('/iot/sensors');
+        for (const sensor of sensors) {
+            this._sensors.set(sensor.id, sensor);
         }
         this._sensorsFilteredByFloor = null;
     }
 
     async _loadChannels() {
         this._channels.clear();
-        const json = await this._fetch('/iot/channels');
-        for (let index in json) {
-            const channel = json[index];
-            const channelId = channel.code;
-            this._channels.set(channelId, channel);
+        const channels = await this._fetch('/iot/channels');
+        for (const channel of channels) {
+            this._channels.set(channel.id, channel);
         }
     }
 
-    async _loadSamples(timerange, resolution) {
+    async _loadSamples(timerange) {
         const { start, end } = timerange;
         this._timerange[0] = start;
         this._timerange[1] = end;
-        const { timestamps, data } = await this._fetch(`/iot/samples?start=${start.toISOString()}&end=${end.toISOString()}&resolution=${resolution}`)
+        const { timestamps, data } = await this._fetch(`/iot/samples?start=${start.toISOString()}&end=${end.toISOString()}`);
         this._timestamps = timestamps.map(str => new Date(str));
         this._data = data;
     }
 
-    async init(timerange, resolution = 32) {
+    async init(timerange) {
         try {
             await Promise.all([
                 this._loadSensors(),
                 this._loadChannels(),
-                this._loadSamples(timerange, resolution)
+                this._loadSamples(timerange)
             ]);
         } catch (err) {
             console.error(err);
         }
     }
 
-    async refresh(timerange, resolution = 32) {
+    async refresh(timerange) {
         try {
-            await this._loadSamples(timerange, resolution);
+            await this._loadSamples(timerange);
         } catch (err) {
             console.error(err);
         }
