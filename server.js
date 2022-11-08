@@ -1,6 +1,6 @@
 const path = require('path');
 const jsonServer = require('json-server');
-const { getPublicToken } = require('./services/forge.js');
+const { getPublicToken } = require('./services/aps.js');
 const { getSamples } = require('./services/iot.mocked.js');
 const { PORT } = require('./config.js');
 

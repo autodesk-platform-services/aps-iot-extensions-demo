@@ -1,7 +1,7 @@
 const { AuthClientTwoLegged } = require('forge-apis');
-const { FORGE_CLIENT_ID, FORGE_CLIENT_SECRET } = require('../config.js');
+const { APS_CLIENT_ID, APS_CLIENT_SECRET } = require('../config.js');
 
-let publicAuthClient = new AuthClientTwoLegged(FORGE_CLIENT_ID, FORGE_CLIENT_SECRET, ['viewables:read'], true);
+let publicAuthClient = new AuthClientTwoLegged(APS_CLIENT_ID, APS_CLIENT_SECRET, ['viewables:read'], true);
 
 async function getPublicToken() {
     if (!publicAuthClient.isAuthorized()) {
