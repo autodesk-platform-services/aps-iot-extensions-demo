@@ -29,8 +29,7 @@ or `objectId` (the dbID of the room the sensor should be associated with)
 
 > Note: the locations and object IDs in the mocked up data is setup for the _rac\_basic\_sample\_project.rvt_ sample design.
 
-- In [services/iot.mocked.js](./services/iot.mocked.js), adjust the resolution and ranges
-of the randomly generated sensor data
+- In [services/iot.mocked.js](./services/iot.mocked.js), adjust the resolution and ranges of the randomly generated sensor data
 - Run the app: `yarn start`
 - Go to http://localhost:3000
 
