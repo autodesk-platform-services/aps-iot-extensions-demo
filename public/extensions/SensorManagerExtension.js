@@ -247,7 +247,7 @@ class AdnDataVizTool extends AdnToolInterface {
     }
 }
 
-class SensorManager extends Autodesk.Viewing.Extension {
+export class SensorManagerExtension extends Autodesk.Viewing.Extension {
     constructor(viewer, options) {
         super(viewer, options);
 
@@ -324,4 +324,4 @@ class SensorManager extends Autodesk.Viewing.Extension {
     }
 }
 
-Autodesk.Viewing.theExtensionManager.registerExtension('Iot.SensorManager', SensorManager);
+export const SensorManagerExtensionID = 'IoT.SensorManager';
