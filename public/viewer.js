@@ -1,5 +1,23 @@
 /// import * as Autodesk from "@types/forge-viewer";
 
+import { SensorListExtension } from './extensions/SensorListExtension.js';
+import { SensorDetailExtension } from './extensions/SensorDetailExtension.js';
+import { SensorSpritesExtension } from './extensions/SensorSpritesExtension.js';
+import { SensorHeatmapsExtension } from './extensions/SensorHeatmapsExtension.js';
+import { SensorManagerExtension } from './extensions/SensorManagerExtension.js';
+
+export const SensorListExtensionID = 'IoT.SensorList';
+export const SensorDetailExtensionID = 'IoT.SensorDetail';
+export const SensorSpritesExtensionID = 'IoT.SensorSprites';
+export const SensorHeatmapsExtensionID = 'IoT.SensorHeatmaps';
+export const SensorManagerExtensionID = 'IoT.SensorManager';
+
+Autodesk.Viewing.theExtensionManager.registerExtension(SensorListExtensionID, SensorListExtension);
+Autodesk.Viewing.theExtensionManager.registerExtension(SensorDetailExtensionID, SensorDetailExtension);
+Autodesk.Viewing.theExtensionManager.registerExtension(SensorSpritesExtensionID, SensorSpritesExtension);
+Autodesk.Viewing.theExtensionManager.registerExtension(SensorHeatmapsExtensionID, SensorHeatmapsExtension);
+Autodesk.Viewing.theExtensionManager.registerExtension(SensorManagerExtensionID, SensorManagerExtension);
+
 async function getAccessToken(callback) {
     try {
         const resp = await fetch('/auth/token');
