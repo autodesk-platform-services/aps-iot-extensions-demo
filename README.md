@@ -9,7 +9,7 @@ Sample [Autodesk Platform Services](https://aps.autodesk.com) application with a
 
 Live demo: https://aps-iot-extensions-demo.autodesk.io
 
-![screenshot](./thumbnail.png)
+![thumbnail](./thumbnail.png)
 
 ## Setup
 
