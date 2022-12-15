@@ -38,6 +38,14 @@ Live demo: https://aps-iot-extensions-demo.autodesk.io
 
 > When using [Visual Studio Code](https://code.visualstudio.com), you can specify the env. variables listed above in a _.env_ file in this folder, and run & debug the application directly from the editor.
 
+## Limitation
+
+- This sample runs on the `Demonstration` mode by default with the below constraints:
+  - Not support having more than 8 sensors in total.
+  - Deleting demo sensors with the `immutable: true` attribute is not allowed.
+  - Manipulating channel data is not allowed.
+- To remove the demo constraints above, Setup environment variable `APS_SAMPLE_ENVIRONMENT` with other values rather than `Demonstration` before running the app. e.g., `Development` or `Production`.
+
 ## License
 
 This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT).

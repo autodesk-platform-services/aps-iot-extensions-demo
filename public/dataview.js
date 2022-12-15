@@ -109,12 +109,16 @@ export class MyDataView {
             groupName: data.groupName
         };
 
-        const json = await this._post('/iot/sensors', payload);
+        try {
+            const json = await this._post('/iot/sensors', payload);
 
-        const sensor = json;
-        const sensorId = sensor.code;
-        this._sensors.set(sensorId, sensor);
-        this._sensorsFilteredByFloor = null;
+            const sensor = json;
+            const sensorId = sensor.code;
+            this._sensors.set(sensorId, sensor);
+            this._sensorsFilteredByFloor = null;
+        } catch (error) {
+            alert(error);
+        }
     }
 
     async deleteSensors(sensorId) {
@@ -122,10 +126,14 @@ export class MyDataView {
         if (!json || !json[0]) throw `Sensor not found with given code \`${sensorId}\``;
 
         const sensor = json[0];
-        await this._delete(`/iot/sensors/${sensor.id}`);
+        try {
+            await this._delete(`/iot/sensors/${sensor.id}`);
 
-        this._sensors.delete(sensorId);
-        this._sensorsFilteredByFloor = null;
+            this._sensors.delete(sensorId);
+            this._sensorsFilteredByFloor = null;
+        } catch (error) {
+            alert(error);
+        }
     }
 
     getSensors() {
