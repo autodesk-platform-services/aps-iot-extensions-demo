@@ -27,10 +27,6 @@ Renders the current readings of all sensor devices in form of heatmaps applied t
 The extension also displays a small panel with a color legend, and a dropdown that can be used to switch between different
 sensor readings.
 
-### SensorManagerExtension
-
-Allows you to add or remove sensor devices during runtime.
-
 ## Usage
 
 - import the extensions into your web application as ES6 modules, either individually, or using the `index.js` file (which includes

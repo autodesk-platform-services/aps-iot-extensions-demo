@@ -28,11 +28,14 @@ Live demo: https://aps-iot-extensions-demo.autodesk.io
     - `APS_CLIENT_ID` - client ID of your APS application
     - `APS_CLIENT_SECRET` - client secret of your APS application
 - In [public/config.js](./public/config.js), modify `APS_MODEL_URN` and `APS_MODEL_VIEW` with your own model URN and view GUID
-- In [services/db.json](./services/db.json), modify the mocked up sensors, for example, changing their `location` (XYZ position in the model's coordinate system) or `objectId` (the dbID of the room the sensor should be associated with)
+- In [./services/iot.mocked.js](./services/iot.mocked.js)
+    - Modify the mocked up sensors,
+for example, changing their `location` (XYZ position in the model's coordinate system)
+or `objectId` (the dbID of the room the sensor should be associated with)
 
-> Note: the locations and object IDs in the mocked up data is setup specifically for the _rac\_basic\_sample\_project.rvt_ sample project from [Revit Sample Project Files](https://knowledge.autodesk.com/support/revit/getting-started/caas/CloudHelp/cloudhelp/2022/ENU/Revit-GetStarted/files/GUID-61EF2F22-3A1F-4317-B925-1E85F138BE88-htm.html).
+        > Note: the locations and object IDs in the mocked up data is setup specifically for the _rac\_basic\_sample\_project.rvt_ sample project from [Revit Sample Project Files](https://knowledge.autodesk.com/support/revit/getting-started/caas/CloudHelp/cloudhelp/2022/ENU/Revit-GetStarted/files/GUID-61EF2F22-3A1F-4317-B925-1E85F138BE88-htm.html).
 
-- In [services/iot.mocked.js](./services/iot.mocked.js), adjust the resolution and ranges of the randomly generated sensor data
+    - Adjust the resolution and ranges of the randomly generated sensor data
 - Run the app: `yarn start`
 - Go to http://localhost:3000
 
