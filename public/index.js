@@ -3,7 +3,8 @@ import {
     SensorListExtensionID,
     SensorSpritesExtensionID,
     SensorDetailExtensionID,
-    SensorHeatmapsExtensionID
+    SensorHeatmapsExtensionID,
+    SensorManagerExtensionID
 } from './viewer.js';
 import { initTimeline } from './timeline.js';
 import { MyDataView } from './dataview.js';
@@ -20,6 +21,7 @@ const EXTENSIONS = [
     SensorSpritesExtensionID,
     SensorDetailExtensionID,
     SensorHeatmapsExtensionID,
+    SensorManagerExtensionID,
     'Autodesk.AEC.LevelsExtension'
 ];
 
@@ -42,6 +44,24 @@ viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async () => {
     adjustPanelStyle(viewer.getExtension(SensorListExtensionID).panel, { right: '10px', top: '10px', width: '500px', height: '300px' });
     adjustPanelStyle(viewer.getExtension(SensorDetailExtensionID).panel, { right: '10px', top: '320px', width: '500px', height: '300px' });
     adjustPanelStyle(viewer.getExtension(SensorHeatmapsExtensionID).panel, { left: '10px', top: '320px', width: '300px', height: '150px' });
+
+    // Configure the sensor manager extension
+    const sensorMgrExt = viewer.getExtension(SensorManagerExtensionID);
+    sensorMgrExt.onSensorAdded = async (data) => {
+        await dataView.addSensors(data);
+        const timeRange = dataView.getTimerange();
+        await dataView.refresh({ start: timeRange[0], end: timeRange[1] });
+        extensions.forEach(ext => ext.dataView = dataView);
+    };
+    sensorMgrExt.onSensorDeleted = async (sensorId) => {
+        await dataView.deleteSensors(sensorId);
+        const timeRange = dataView.getTimerange();
+        await dataView.refresh({ start: timeRange[0], end: timeRange[1] });
+        extensions.forEach(ext => {
+            ext.dataView = dataView;
+            ext.currentSensorID = null;
+        });
+    };
 
     // Configure and activate the levels extension
     const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');

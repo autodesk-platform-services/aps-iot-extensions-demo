@@ -1,10 +1,16 @@
-const express = require('express');
+const path = require('path');
+const jsonServer = require('json-server');
 const { getPublicToken } = require('./services/aps.js');
-const { getSensors, getChannels, getSamples } = require('./services/iot.mocked.js');
+const { getSamples } = require('./services/iot.mocked.js');
 const { PORT } = require('./config.js');
 
-let app = express();
-app.use(express.static('public'));
+const router = jsonServer.router(path.join(__dirname, './services/db.json'), { foreignKeySuffix: '_id' });
+
+const app = jsonServer.create();
+app.use(jsonServer.defaults({
+    static: path.join(__dirname, './public'),
+    bodyParser: true
+}));
 
 app.get('/auth/token', async function (req, res, next) {
     try {
@@ -14,29 +20,21 @@ app.get('/auth/token', async function (req, res, next) {
     }
 });
 
-app.get('/iot/sensors', async function (req, res, next) {
-    try {
-        res.json(await getSensors());
-    } catch (err) {
-        next(err);
-    }
-});
-
-app.get('/iot/channels', async function (req, res, next) {
-    try {
-        res.json(await getChannels());
-    } catch (err) {
-        next(err);
-    }
-});
-
 app.get('/iot/samples', async function (req, res, next) {
     try {
-        res.json(await getSamples({ start: new Date(req.query.start), end: new Date(req.query.end) }, req.query.resolution));
+        const { start, end, resolution } = req.query;
+        if (!start || !end || !resolution) {
+            throw new Error('Missing some of the required parameters: "start", "end", "resolution".');
+        }
+        const sensors = router.db.get('sensors').value();
+        res.json(await getSamples(sensors, { start: new Date(start), end: new Date(end) }, resolution));
     } catch (err) {
         next(err);
     }
 });
+
+app.use(jsonServer.rewriter({ '/iot/*': '/$1' }));
+app.use(router);
 
 app.use((err, req, res, next) => {
     console.error(err);

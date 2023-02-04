@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "express": "^4.17.3",
-    "forge-apis": "^0.9.0"
+    "forge-apis": "^0.9.0",
+    "json-server": "^0.17.0"
   }
 }

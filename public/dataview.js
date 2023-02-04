@@ -44,7 +44,9 @@ export class MyDataView {
     async _loadSensors() {
         this._sensors.clear();
         const json = await this._fetch('/iot/sensors');
-        for (const [sensorId, sensor] of Object.entries(json)) {
+        for (let index in json) {
+            const sensor = json[index];
+            const sensorId = sensor.code;
             this._sensors.set(sensorId, sensor);
         }
         this._sensorsFilteredByFloor = null;
@@ -53,7 +55,9 @@ export class MyDataView {
     async _loadChannels() {
         this._channels.clear();
         const json = await this._fetch('/iot/channels');
-        for (const [channelId, channel] of Object.entries(json)) {
+        for (let index in json) {
+            const channel = json[index];
+            const channelId = channel.code;
             this._channels.set(channelId, channel);
         }
     }
@@ -93,6 +97,34 @@ export class MyDataView {
 
     set floor(floor) {
         this._floor = floor;
+        this._sensorsFilteredByFloor = null;
+    }
+
+    async addSensors(data) {
+        const payload = {
+            code: data.code,
+            name: data.name,
+            location: data.location,
+            objectId: data.objectId,
+            groupName: data.groupName
+        };
+
+        const json = await this._post('/iot/sensors', payload);
+
+        const sensor = json;
+        const sensorId = sensor.code;
+        this._sensors.set(sensorId, sensor);
+        this._sensorsFilteredByFloor = null;
+    }
+
+    async deleteSensors(sensorId) {
+        const json = await this._fetch(`/iot/sensors?code=${sensorId}`);
+        if (!json || !json[0]) throw `Sensor not found with given code \`${sensorId}\``;
+
+        const sensor = json[0];
+        await this._delete(`/iot/sensors/${sensor.id}`);
+
+        this._sensors.delete(sensorId);
         this._sensorsFilteredByFloor = null;
     }
 
