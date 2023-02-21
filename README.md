@@ -41,6 +41,14 @@ or `objectId` (the dbID of the room the sensor should be associated with)
 
 > When using [Visual Studio Code](https://code.visualstudio.com), you can specify the env. variables listed above in a _.env_ file in this folder, and run & debug the application directly from the editor.
 
+## Tips & Tricks
+
+If you need to find all _room volumes_ in a Revit design (for example, to apply heatmaps to them), you can use the following viewer method in the browser console:
+
+```js
+NOP_VIEWER.search('Revit Rooms', ids => { console.log('Room volume object IDs', ids); }, err => { console.error(err); }, ['Category'], { searchHidden: true });
+```
+
 ## License
 
 This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT).
