@@ -1,15 +1,37 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-let { APS_CLIENT_ID, APS_CLIENT_SECRET, PORT } = process.env;
-if (!APS_CLIENT_ID || !APS_CLIENT_SECRET) {
-    console.warn('Missing some of the environment variables.');
+const {
+    APS_CLIENT_ID,
+    APS_CLIENT_SECRET,
+    APS_MODEL_URN,
+    APS_MODEL_VIEW,
+    APS_MODEL_DEFAULT_FLOOR_INDEX,
+    DEFAULT_TIMERANGE_START,
+    DEFAULT_TIMERANGE_END,
+    INFLUXDB_URL,
+    INFLUXDB_ORG,
+    INFLUXDB_BUCKET,
+    INFLUXDB_TOKEN,
+    PORT
+} = process.env;
+
+if (!APS_CLIENT_ID || !APS_CLIENT_SECRET || !APS_MODEL_URN || !INFLUXDB_URL || !INFLUXDB_ORG || !INFLUXDB_BUCKET || !INFLUXDB_TOKEN) {
+    console.warn('Missing some of the required environment variables.');
     process.exit(1);
 }
-PORT = PORT || 3000;
 
 module.exports = {
     APS_CLIENT_ID,
     APS_CLIENT_SECRET,
-    PORT
+    APS_MODEL_URN,
+    APS_MODEL_VIEW,
+    APS_MODEL_DEFAULT_FLOOR_INDEX: APS_MODEL_DEFAULT_FLOOR_INDEX ? parseInt(APS_MODEL_DEFAULT_FLOOR_INDEX) : 1,
+    DEFAULT_TIMERANGE_START: DEFAULT_TIMERANGE_START || '2023-01-01',
+    DEFAULT_TIMERANGE_END: DEFAULT_TIMERANGE_END || '2023-04-01',
+    INFLUXDB_URL,
+    INFLUXDB_ORG,
+    INFLUXDB_BUCKET,
+    INFLUXDB_TOKEN,
+    PORT: PORT ? parseInt(PORT) : 3000
 };

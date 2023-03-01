@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@influxdata/influxdb-client@^1.33.2":
+  version "1.33.2"
+  resolved "https://registry.yarnpkg.com/@influxdata/influxdb-client/-/influxdb-client-1.33.2.tgz#c68cfcf592e4e042361003143fbab99461410172"
+  integrity sha512-RT5SxH+grHAazo/YK3UTuWK/frPWRM0N7vkrCUyqVprDgQzlLP+bSK4ak2Jv3QVF/pazTnsxWjvtKZdwskV5Xw==
+
 "@types/chart.js@^2.9.35":
   version "2.9.35"
   resolved "https://registry.npmjs.org/@types/chart.js/-/chart.js-2.9.35.tgz"

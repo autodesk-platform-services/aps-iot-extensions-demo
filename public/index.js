@@ -1,19 +1,7 @@
 import { initViewer, loadModel, adjustPanelStyle } from './viewer.js';
-import {
-    SensorListExtensionID,
-    SensorSpritesExtensionID,
-    SensorDetailExtensionID,
-    SensorHeatmapsExtensionID
-} from './viewer.js';
+import { SensorListExtensionID, SensorSpritesExtensionID, SensorDetailExtensionID, SensorHeatmapsExtensionID } from './viewer.js';
 import { initTimeline } from './timeline.js';
 import { MyDataView } from './dataview.js';
-import {
-    APS_MODEL_URN,
-    APS_MODEL_VIEW,
-    APS_MODEL_DEFAULT_FLOOR_INDEX,
-    DEFAULT_TIMERANGE_START,
-    DEFAULT_TIMERANGE_END
-} from './config.js';
 
 const EXTENSIONS = [
     SensorListExtensionID,
@@ -23,15 +11,17 @@ const EXTENSIONS = [
     'Autodesk.AEC.LevelsExtension'
 ];
 
+const config = await fetch('/config.json').then(resp => resp.json());
 const viewer = await initViewer(document.getElementById('preview'), EXTENSIONS);
-loadModel(viewer, APS_MODEL_URN, APS_MODEL_VIEW);
+loadModel(viewer, config.APS_MODEL_URN, config.APS_MODEL_VIEW);
+
 viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async () => {
     // Initialize the timeline
-    initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
+    initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged, config.DEFAULT_TIMERANGE_START, config.DEFAULT_TIMERANGE_END);
 
     // Initialize our data view
     const dataView = new MyDataView();
-    await dataView.init({ start: DEFAULT_TIMERANGE_START, end: DEFAULT_TIMERANGE_END });
+    await dataView.init([new Date(config.DEFAULT_TIMERANGE_START), new Date(config.DEFAULT_TIMERANGE_END)]);
 
     // Configure and activate our custom IoT extensions
     const extensions = [SensorListExtensionID, SensorSpritesExtensionID, SensorDetailExtensionID, SensorHeatmapsExtensionID].map(id => viewer.getExtension(id));
@@ -47,16 +37,16 @@ viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async () => {
     const levelsExt = viewer.getExtension('Autodesk.AEC.LevelsExtension');
     levelsExt.levelsPanel.setVisible(true);
     levelsExt.floorSelector.addEventListener(Autodesk.AEC.FloorSelector.SELECTED_FLOOR_CHANGED, onLevelChanged);
-    levelsExt.floorSelector.selectFloor(APS_MODEL_DEFAULT_FLOOR_INDEX, true);
+    levelsExt.floorSelector.selectFloor(config.APS_MODEL_DEFAULT_FLOOR_INDEX, true);
     adjustPanelStyle(levelsExt.levelsPanel, { left: '10px', top: '10px', width: '300px', height: '300px' });
 
     viewer.getExtension(SensorListExtensionID).onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
     viewer.getExtension(SensorSpritesExtensionID).onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
     viewer.getExtension(SensorHeatmapsExtensionID).onChannelChanged = (channelId) => onCurrentChannelChanged(channelId);
-    onTimeRangeChanged(DEFAULT_TIMERANGE_START, DEFAULT_TIMERANGE_END);
+    onTimeRangeChanged(new Date(config.DEFAULT_TIMERANGE_START), new Date(config.DEFAULT_TIMERANGE_END));
 
     async function onTimeRangeChanged(start, end) {
-        await dataView.refresh({ start, end });
+        await dataView.refresh([start, end]);
         extensions.forEach(ext => ext.dataView = dataView);
     }
 

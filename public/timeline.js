@@ -6,9 +6,9 @@ function debounce(func, timeout = 500) {
     };
 }
 
-export function initTimeline(container, onTimeRangeChanged, onTimeMarkerChanged) {
+export function initTimeline(container, onTimeRangeChanged, onTimeMarkerChanged, start, end) {
     return new Promise(function (resolve, reject) {
-        let timeslider = new ChronosEtu.TimeSlider(container.clientWidth, container.clientHeight, '2022-01-01', '2022-02-01');
+        let timeslider = new ChronosEtu.TimeSlider(container.clientWidth, container.clientHeight, start, end);
         window.addEventListener('resize', () => {
             const { clientWidth, clientHeight } = container;
             timeslider.resize(clientWidth, clientHeight);

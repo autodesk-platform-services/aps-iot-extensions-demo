@@ -22,24 +22,29 @@ Live demo: https://aps-iot-extensions-demo.autodesk.io
 
 ### Running locally
 
-- Clone this repository
+- clone this repository
+- create a `.env` file in the project folder providing the following env. variables:
+    - `APS_CLIENT_ID` - client ID of your APS application (**required**)
+    - `APS_CLIENT_SECRET` - client secret of your APS application (**required**)
+    - `APS_MODEL_URN` - URN of a design you want to load into the viewer (**required**)
+    - `APS_MODEL_VIEW` - GUID of a specific model view you want to load into the viewer (optional)
+    - `APS_MODEL_DEFAULT_FLOOR_INDEX` - floor number to show at the beginning (optional, `1` by default)
+    - `DEFAULT_TIMERANGE_START` - start of the time range to show in the viewer in [ISO string format](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString) (optional; `"2023-01-01"` by default)
+    - `DEFAULT_TIMERANGE_END` - end of the time range to show in the viewer in [ISO string format](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString) (optional; `"2023-04-01"` by default)
+    - `INFLUXDB_URL` - InfluxDB cloud URL (**required**; for example, `"https://us-east-1-1.aws.cloud2.influxdata.com"`)
+    - `INFLUXDB_ORG` - your InfluxDB organization name (**required**)
+    - `INFLUXDB_BUCKET` - your InfluxDB bucket name (**required**)
+    - `INFLUXDB_TOKEN` - your InfluxDB access token (**required**)
+    - `PORT` - port number for the server app (optional, `3000` by default)
+- tweak the hard-coded sensors and channels [./services/influxdb.js](./services/influxdb.js) based on your specific use case:
+    - the IDs of sensors and channels should match the `sensor_id` and `_field` values you have in your InfluxDB dataset
+    - the `location` (XYZ position in the model's coordinate system) or `objectId` (the dbID of the room the sensor should be associated with) should map to existing rooms in your BIM model
+
+        > Note: the locations and object IDs in the hard-coded sensors are setup specifically for the _rac\_basic\_sample\_project.rvt_ sample project from [Revit Sample Project Files](https://knowledge.autodesk.com/support/revit/getting-started/caas/CloudHelp/cloudhelp/2022/ENU/Revit-GetStarted/files/GUID-61EF2F22-3A1F-4317-B925-1E85F138BE88-htm.html).
+
 - Install dependencies: `yarn install`
-- Setup environment variables:
-    - `APS_CLIENT_ID` - client ID of your APS application
-    - `APS_CLIENT_SECRET` - client secret of your APS application
-- In [public/config.js](./public/config.js), modify `APS_MODEL_URN` and `APS_MODEL_VIEW` with your own model URN and view GUID
-- In [./services/iot.mocked.js](./services/iot.mocked.js)
-    - Modify the mocked up sensors,
-for example, changing their `location` (XYZ position in the model's coordinate system)
-or `objectId` (the dbID of the room the sensor should be associated with)
-
-        > Note: the locations and object IDs in the mocked up data is setup specifically for the _rac\_basic\_sample\_project.rvt_ sample project from [Revit Sample Project Files](https://knowledge.autodesk.com/support/revit/getting-started/caas/CloudHelp/cloudhelp/2022/ENU/Revit-GetStarted/files/GUID-61EF2F22-3A1F-4317-B925-1E85F138BE88-htm.html).
-
-    - Adjust the resolution and ranges of the randomly generated sensor data
 - Run the app: `yarn start`
 - Go to http://localhost:3000
-
-> When using [Visual Studio Code](https://code.visualstudio.com), you can specify the env. variables listed above in a _.env_ file in this folder, and run & debug the application directly from the editor.
 
 ## Tips & Tricks
 
@@ -51,5 +56,4 @@ NOP_VIEWER.search('Revit Rooms', ids => { console.log('Room volume object IDs', 
 
 ## License
 
-This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT).
-Please see the [LICENSE](LICENSE) file for more details.
+This sample is licensed under the terms of the [MIT License](http://opensource.org/licenses/MIT). Please see the [LICENSE](LICENSE) file for more details.
