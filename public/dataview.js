@@ -1,8 +1,10 @@
 export class MyDataView {
     constructor() {
         this._timerange = [new Date(), new Date()];
-        this._sensors = new Map();
-        this._channels = new Map();
+        this._sensors = [];
+        this._sensorsMap = new Map();
+        this._channels = [];
+        this._channelsMap = new Map();
         this._data = [];
     }
 
@@ -17,11 +19,19 @@ export class MyDataView {
     }
 
     async _loadSensors() {
-        this._sensors = new Map(Object.entries(await this._fetch('/iot/sensors')));
+        this._sensors = await this._fetch('/iot/sensors');
+        this._sensorsMap = new Map();
+        for (const sensor of this._sensors) {
+            this._sensorsMap.set(sensor.id, sensor);
+        }
     }
 
     async _loadChannels() {
-        this._channels = new Map(Object.entries(await this._fetch('/iot/channels')));
+        this._channels = await this._fetch('/iot/channels');
+        this._channelsMap = new Map();
+        for (const channel of this._channels) {
+            this._channelsMap.set(channel.id, channel);
+        }
     }
 
     async _loadData(start, end) {
@@ -52,9 +62,9 @@ export class MyDataView {
         }
     }
 
-    getSensors() { return this._sensors; }
+    getSensors() { return this._sensorsMap; }
 
-    getChannels() { return this._channels; }
+    getChannels() { return this._channelsMap; }
 
     getTimerange() { return this._timerange; }
 
@@ -62,11 +72,13 @@ export class MyDataView {
         if (!this._data) {
             return null;
         }
-        const samples = this._data.filter(e => e.sensor_id === sensorId && e._field === channelId);
+        const sensorPos = this._sensors.findIndex(sensor => sensor.id === sensorId);
+        const channelPos = this._channels.findIndex(channel => channel.id === channelId);
+        const rows = this._data.filter(row => row[1] === sensorPos && row[2] === channelPos);
         return {
-            count: samples.length,
-            timestamps: samples.map(e => new Date(e._time)),
-            values: samples.map(e => e._value)
+            count: rows.length,
+            timestamps: rows.map(row => new Date(row[0])),
+            values: rows.map(row => row[3])
         }
     }
 }

@@ -1,8 +1,9 @@
 const { InfluxDB } = require('@influxdata/influxdb-client');
 const { INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN } = require('../config.js');
 
-const SENSORS = {
-    'TLM0100': {
+const SENSORS = [
+    {
+        id: 'TLM0100',
         name: 'Living Room',
         description: 'Basic sensor in the middle of the living room.',
         groupName: 'Level 1',
@@ -13,7 +14,8 @@ const SENSORS = {
         },
         objectId: 4124
     },
-    'TLM0101': {
+    {
+        id: 'TLM0101',
         name: 'Dining Table',
         description: 'Basic sensor at the dining table.',
         groupName: 'Level 1',
@@ -24,7 +26,8 @@ const SENSORS = {
         },
         objectId: 4111
     },
-    'TLM0102': {
+    {
+        id: 'TLM0102',
         name: 'Kitchen',
         description: 'Basic sensor in the kitchen.',
         groupName: 'Level 1',
@@ -35,7 +38,8 @@ const SENSORS = {
         },
         objectId: 4111
     },
-    'TLM0103': {
+    {
+        id: 'TLM0103',
         code: 'TLM0103',
         name: 'Bedroom',
         description: 'Basic sensor in the bedroom.',
@@ -47,10 +51,11 @@ const SENSORS = {
         },
         objectId: 4085
     }
-};
+];
 
-const CHANNELS = {
-    'co': {
+const CHANNELS = [
+    {
+        id: 'co',
         name: 'CO₂',
         description: 'Level of carbon dioxide.',
         type: 'double',
@@ -58,7 +63,8 @@ const CHANNELS = {
         min: 0.0,
         max: 1.0
     },
-    'humidity': {
+    {
+        id: 'humidity',
         name: 'Humidity',
         description: 'Air humidity.',
         type: 'double',
@@ -66,7 +72,8 @@ const CHANNELS = {
         min: 0.0,
         max: 100.0
     },
-    'temperature': {
+    {
+        id: 'temperature',
         name: 'Temperature',
         description: 'Internal temperature.',
         type: 'double',
@@ -74,7 +81,12 @@ const CHANNELS = {
         min: 50.0,
         max: 100.0
     }
-};
+];
+
+const SENSOR_ID_COLUMN_NAME = 'sensor_id';
+const CHANNEL_ID_COLUMN_NAME = '_field';
+const TIMESTAMP_COLUMN_NAME = '_time';
+const VALUE_COLUMN_NAME = '_value';
 
 function getSensors() {
     return SENSORS;
@@ -91,15 +103,23 @@ function getSamples(start, end) {
     const query = `
         from(bucket: "${INFLUXDB_BUCKET}")
             |> range(start: ${start.toISOString()}, stop: ${end.toISOString()})
-            |> filter(fn: (r) => ${Object.keys(SENSORS).map(e => `r["sensor_id"] == "${e}"`).join(' or ')})
-            |> filter(fn: (r) => ${Object.keys(CHANNELS).map(e => `r["_field"] == "${e}"`).join(' or ')})
+            |> filter(fn: (r) => ${SENSORS.map(sensor => `r["${SENSOR_ID_COLUMN_NAME}"] == "${sensor.id}"`).join(' or ')})
+            |> filter(fn: (r) => ${CHANNELS.map(channel => `r["${CHANNEL_ID_COLUMN_NAME}"] == "${channel.id}"`).join(' or ')})
             |> aggregateWindow(every: ${resolution}, fn: mean, createEmpty: false)
             |> yield(name: "mean")
     `;
     return new Promise(function (resolve, reject) {
         let data = [];
         api.queryRows(query, {
-            next: (row, table) => data.push(table.toObject(row)),
+            next: (row, table) => {
+                row = table.toObject(row);
+                data.push([
+                    row[TIMESTAMP_COLUMN_NAME],
+                    SENSORS.findIndex(sensor => sensor.id === row[SENSOR_ID_COLUMN_NAME]),
+                    CHANNELS.findIndex(channel => channel.id === row[CHANNEL_ID_COLUMN_NAME]),
+                    row[VALUE_COLUMN_NAME]
+                ]);
+            },
             error: err => reject(err),
             complete: () => resolve(data)
         });
