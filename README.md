@@ -17,13 +17,13 @@ Live demo: https://aps-iot-extensions-demo.autodesk.io
 
 - [APS credentials](https://forge.autodesk.com/en/docs/oauth/v2/tutorials/create-app)
 - [InfluxDB Cloud](https://www.influxdata.com/products/influxdb-cloud/) account
-- [Node.js](https://nodejs.org)
+- [Node.js](https://nodejs.org) runtime
 - [Yarn](https://yarnpkg.com) package manager
 - Terminal (for example, [Windows Command Prompt](https://en.wikipedia.org/wiki/Cmd.exe) or [macOS Terminal](https://support.apple.com/guide/terminal/welcome/mac))
 
 ### Running locally
 
-> The application is currently hard-coded to work well with a specific BIM model and InfluxDB data. Please refer to the `Sample data` section below for more details.
+> The code sample is currently hard-coded to work well with a specific BIM model and a specific set of InfluxDB data. Please refer to the [Sample data](###sample-data) section below for more details.
 
 - clone this repository
 - create a `.env` file in the project folder providing the following env. variables (see `.env.example` for reference):
@@ -48,7 +48,9 @@ Live demo: https://aps-iot-extensions-demo.autodesk.io
 If you want to try the application as-is, use the following sample data:
 
 - BIM model: _rac\_basic\_sample\_project.rvt_ sample project from [Revit Sample Project Files](https://knowledge.autodesk.com/support/revit/getting-started/caas/CloudHelp/cloudhelp/2022/ENU/Revit-GetStarted/files/GUID-61EF2F22-3A1F-4317-B925-1E85F138BE88-htm.html)
+  - Upload this model to your own OSS bucket, and translate it so that it can be loaded in the viewer
 - InfluxDB data: [./air-sensor-data.lp](./air-sensor-data.lp)
+  - Load this data into your InfluxDB bucket ([tutorial](https://docs.influxdata.com/influxdb/cloud/write-data/no-code/load-data/))
 
 If you want to use your own BIM model and/or InfluxDB data, you'll need to adjust the code in [./services/influxdb.js](./services/influxdb.js):
 
