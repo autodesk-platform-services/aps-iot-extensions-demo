@@ -1,6 +1,8 @@
 /// import * as Autodesk from "@types/forge-viewer";
 /// import * as Chart from "@types/chart.js";
+
 import { findNearestTimestampIndex } from './HistoricalDataView.js';
+
 export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
     constructor(viewer, id, title, options) {
         super(viewer.container, id, title, options);
@@ -12,6 +14,7 @@ export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
         this._charts = [];
         this._lastHighlightedPointIndex = -1;
     }
+
     initialize() {
         this.title = this.createTitleBar(this.titleLabel || this.container.id);
         this.initializeMoveHandlers(this.title);
@@ -23,6 +26,7 @@ export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
         this.content.style.opacity = 0.9;
         this.container.appendChild(this.content);
     }
+
     updateCharts(sensorId, dataView) {
         this.content.innerHTML = '';
         this._charts = [];
@@ -43,8 +47,8 @@ export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
             this._charts.push(this._createChart(canvas, (samples === null || samples === void 0 ? void 0 : samples.timestamps) || [], (samples === null || samples === void 0 ? void 0 : samples.values) || [], channel.min, channel.max, `${channel.name} (${channel.unit})`));
         }
     }
+
     _createChart(canvas, timestamps, values, min, max, title) {
-        // @ts-ignore
         return new Chart(canvas.getContext('2d'), {
             type: 'line',
             data: {
@@ -55,7 +59,6 @@ export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
                         radius: values.map(_ => 3),
                         fill: false,
                         borderColor: '#eee',
-                        // @ts-ignore
                         color: '#eee',
                         tension: 0.1
                     }],
@@ -67,6 +70,7 @@ export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
             }
         });
     }
+
     updateCursor(sensorId, dataView, currentTime) {
         const defaultChannelID = dataView.getChannels().keys().next().value;
         if (!defaultChannelID) {

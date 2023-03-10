@@ -1,11 +1,11 @@
 /**
  * Helper method for searching through list of timestamps for an entry
  * that is closest to the provided target timestamp.
- * @param list List of timestamps.
- * @param timestamp Target timestamp to locate in the list.
- * @param fractional If the target timestamp is "between" two timestamps in the list,
+ * @param {Date[]} list List of timestamps.
+ * @param {Date} timestamp Target timestamp to locate in the list.
+ * @param {boolean} [fractional=false] If the target timestamp is "between" two timestamps in the list,
  * return a corresponding fractional number instead of just an index.
- * @returns Index of the closest timestamp in the list, or a fractional number.
+ * @returns {number} Index of the closest timestamp in the list, or a fractional number.
  */
 export function findNearestTimestampIndex(list, timestamp, fractional = false) {
     let start = 0;
@@ -26,11 +26,9 @@ export function findNearestTimestampIndex(list, timestamp, fractional = false) {
         }
     }
     if (fractional && start < end) {
-        // @ts-ignore
         return start + (timestamp - list[start]) / (list[end] - list[start]);
     }
     else {
-        // @ts-ignore
         return (timestamp - list[start] < list[end] - timestamp) ? start : end;
     }
 }

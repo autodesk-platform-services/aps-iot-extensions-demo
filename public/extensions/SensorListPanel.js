@@ -1,5 +1,7 @@
 /// import * as Autodesk from "@types/forge-viewer";
+
 import { findNearestTimestampIndex } from './HistoricalDataView.js';
+
 export class SensorListPanel extends Autodesk.Viewing.UI.PropertyPanel {
     constructor(viewer, id, title, options) {
         super(viewer.container, id, title, options);
@@ -9,6 +11,7 @@ export class SensorListPanel extends Autodesk.Viewing.UI.PropertyPanel {
         this.container.style.height = (options.height || 400) + 'px';
         this.container.style.resize = 'none';
     }
+
     initialize() {
         this.title = this.createTitleBar(this.titleLabel || this.container.id);
         this.initializeMoveHandlers(this.title);
@@ -36,6 +39,7 @@ export class SensorListPanel extends Autodesk.Viewing.UI.PropertyPanel {
             }
         });
     }
+
     update(dataView, timestamp, updateColumns) {
         var _a, _b;
         if (updateColumns) {

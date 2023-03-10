@@ -1,4 +1,4 @@
-Experimental set of [Autodesk Platform Services](https://aps.autodesk.com) viewer extensions built on top of
+Collection of [Autodesk Platform Services](https://aps.autodesk.com) viewer extensions built on top of
 the [Data Visualization extensions](https://forge.autodesk.com/en/docs/dataviz/v1/developers_guide/introduction/overview/),
 allowing developers to easily visualize historical IoT data.
 

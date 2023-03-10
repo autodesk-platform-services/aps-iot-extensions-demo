@@ -1,8 +1,11 @@
 /// import * as Autodesk from "@types/forge-viewer";
+
 import { UIBaseExtension } from './BaseExtension.js';
 import { findNearestTimestampIndex } from './HistoricalDataView.js';
 import { SensorHeatmapsPanel } from './SensorHeatmapsPanel.js';
+
 export const SensorHeatmapsExtensionID = 'IoT.SensorHeatmaps';
+
 export class SensorHeatmapsExtension extends UIBaseExtension {
     constructor(viewer, options) {
         super(viewer, options);
@@ -28,12 +31,16 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
             alpha: 1.0
         };
     }
+
     onDataViewChanged(oldDataView, newDataView) {
         this.updateChannels();
         this.createHeatmaps();
     }
+
     onCurrentTimeChanged(oldTime, newTime) { this.updateHeatmaps(); }
+
     onCurrentChannelChanged(oldChannelID, newChannelID) { this.updateHeatmaps(); }
+
     getSensorValue(surfaceShadingPoint, sensorType) {
         if (!this.dataView || !this.currentTime || !this.currentChannelID) {
             return Number.NaN;
@@ -62,15 +69,17 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
             return (value - channel.min) / (channel.max - channel.min);
         }
     }
+
     async createHeatmaps() {
-        if (this.isActive()) { // TODO: update @types/forge-viewer
+        if (this.isActive()) {
             const channelID = this.currentChannelID;
             await this._setupSurfaceShading(this.viewer.model);
             this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue, { heatmapConfig: this.heatmapConfig });
         }
     }
+
     async updateHeatmaps() {
-        if (this.isActive()) { // TODO: update @types/forge-viewer
+        if (this.isActive()) {
             const channelID = this.currentChannelID;
             if (!this._surfaceShadingData) {
                 await this._setupSurfaceShading(this.viewer.model);
@@ -81,11 +90,13 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
             }
         }
     }
+
     updateChannels() {
         if (this.dataView && this.panel) {
             this.panel.updateChannels(this.dataView);
         }
     }
+
     async load() {
         await super.load();
         this.panel = new SensorHeatmapsPanel(this.viewer, 'heatmaps', 'Heatmaps', {});
@@ -97,31 +108,33 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
         console.log(`${SensorHeatmapsExtensionID} extension loaded.`);
         return true;
     }
+
     unload() {
-        var _a;
         super.unload();
-        (_a = this.panel) === null || _a === void 0 ? void 0 : _a.uninitialize();
+        this.panel?.uninitialize();
         this.panel = undefined;
         console.log(`${SensorHeatmapsExtensionID} extension unloaded.`);
         return true;
     }
+
     activate() {
-        var _a;
         super.activate();
-        (_a = this.panel) === null || _a === void 0 ? void 0 : _a.setVisible(true);
+        this.panel?.setVisible(true);
         this.onDataViewChanged(undefined, undefined);
         return true;
     }
+
     deactivate() {
-        var _a;
         super.deactivate();
-        (_a = this.panel) === null || _a === void 0 ? void 0 : _a.setVisible(false);
+        this.panel?.setVisible(false);
         this._dataVizExt.removeSurfaceShading();
         return true;
     }
+
     onToolbarCreated() {
         this.createToolbarButton('iot-heatmaps-btn', 'IoT Heatmaps', 'https://img.icons8.com/ios-filled/50/000000/heat-map.png'); // <a href="https://icons8.com/icon/8315/heat-map">Heat Map icon by Icons8</a>
     }
+
     async _setupSurfaceShading(model) {
         if (!this.dataView) {
             return;

@@ -1,6 +1,9 @@
 /// import * as Autodesk from "@types/forge-viewer";
+
 import { UIBaseExtension } from './BaseExtension.js';
+
 export const SensorSpritesExtensionID = 'IoT.SensorSprites';
+
 export class SensorSpritesExtension extends UIBaseExtension {
     constructor(viewer, options) {
         super(viewer, options);
@@ -8,12 +11,15 @@ export class SensorSpritesExtension extends UIBaseExtension {
         this._dbIdToSensorId = new Map();
         this.update = this.update.bind(this);
     }
+
     onDataViewChanged(oldDataView, newDataView) { this.update(); }
+
     update() {
-        if (this.isActive()) { // TODO: update @types/forge-viewer
+        if (this.isActive()) {
             this._refreshSprites();
         }
     }
+
     async load() {
         await super.load();
         this._style = this._createVisualStyle();
@@ -21,6 +27,7 @@ export class SensorSpritesExtension extends UIBaseExtension {
         console.log(`${SensorSpritesExtensionID} extension loaded.`);
         return true;
     }
+
     unload() {
         super.unload();
         this._style = undefined;
@@ -28,24 +35,29 @@ export class SensorSpritesExtension extends UIBaseExtension {
         console.log(`${SensorSpritesExtensionID} extension unloaded.`);
         return true;
     }
+
     activate() {
         super.activate();
         this._refreshSprites();
         return true;
     }
+
     deactivate() {
         super.deactivate();
         this._dataVizExt.removeAllViewables();
         return true;
     }
+
     onToolbarCreated() {
         this.createToolbarButton('iot-sensor-sprites-btn', 'IoT Sensor Sprites', 'https://img.icons8.com/ios-filled/50/000000/iot-sensor.png'); // <a href="https://icons8.com/icon/61307/iot-sensor">IoT Sensor icon by Icons8</a>
     }
+
     _onSpriteClicked(ev) {
         if (this.onSensorClicked) {
             this.onSensorClicked(this._dbIdToSensorId.get(ev.dbId));
         }
     }
+
     _refreshSprites() {
         this._dataVizExt.removeAllViewables();
         if (!this.dataView) {
@@ -66,6 +78,7 @@ export class SensorSpritesExtension extends UIBaseExtension {
             this._dataVizExt.addViewables(viewableData);
         });
     }
+
     _createVisualStyle() {
         const DataVizCore = Autodesk.DataVisualization.Core;
         const viewableType = DataVizCore.ViewableType.SPRITE;

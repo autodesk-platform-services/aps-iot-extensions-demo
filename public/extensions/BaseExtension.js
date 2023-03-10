@@ -1,4 +1,5 @@
 /// import * as Autodesk from "@types/forge-viewer";
+
 /**
  * Base class for all IoT extensions.
  *
@@ -13,75 +14,93 @@ export class BaseExtension extends Autodesk.Viewing.Extension {
         this._currentChannelID = undefined;
         this._dataVizExt = null;
     }
-    onDataViewChanged(oldDataView, newDataView) { }
-    onCurrentTimeChanged(oldTime, newTime) { }
-    onCurrentSensorChanged(oldSensorID, newSensorID) { }
-    onCurrentChannelChanged(oldChannelID, newChannelID) { }
+
+    onDataViewChanged(oldDataView, newDataView) {}
+
+    onCurrentTimeChanged(oldTime, newTime) {}
+
+    onCurrentSensorChanged(oldSensorID, newSensorID) {}
+
+    onCurrentChannelChanged(oldChannelID, newChannelID) {}
+
     getDefaultSensorID() {
         if (!this._dataView) {
             return undefined;
         }
         return this._dataView.getSensors().keys().next().value;
     }
+
     getDefaultChannelID() {
         if (!this._dataView) {
             return undefined;
         }
         return this._dataView.getChannels().keys().next().value;
     }
+
     get dataView() {
         return this._dataView;
     }
+
     set dataView(newDataView) {
         const oldDataView = this._dataView;
         this._dataView = newDataView;
         this.onDataViewChanged(oldDataView, newDataView);
     }
+
     get currentTime() {
         return this._currentTime || new Date();
     }
+
     set currentTime(newTime) {
         const oldTime = this._currentTime;
         this._currentTime = newTime;
         this.onCurrentTimeChanged(oldTime, newTime);
     }
+
     get currentSensorID() {
         return this._currentSensorID || this.getDefaultSensorID();
     }
+
     set currentSensorID(newSensorID) {
         const oldSensorID = this._currentSensorID;
         this._currentSensorID = newSensorID;
         this.onCurrentSensorChanged(oldSensorID, newSensorID);
     }
+
     get currentChannelID() {
         return this._currentChannelID || this.getDefaultChannelID();
     }
+
     set currentChannelID(newChannelID) {
         const oldChannelID = this._currentChannelID;
         this._currentChannelID = newChannelID;
         this.onCurrentChannelChanged(oldChannelID, newChannelID);
     }
+
     async load() {
         this._dataVizExt = await this.viewer.loadExtension('Autodesk.DataVisualization');
         return true;
     }
+
     unload() {
         this._dataVizExt = null;
         return true;
     }
+
     activate() {
         return true;
     }
+
     deactivate() {
         return true;
     }
+
     loadScript(url, namespace) {
         for (const script of document.querySelectorAll('script').values()) {
             if (script.src === url) {
                 return Promise.resolve();
             }
         }
-        // @ts-ignore
         if (namespace && window[namespace] !== undefined) {
             console.warn('Script is already loaded but not from the requested URL', url);
         }
@@ -94,6 +113,7 @@ export class BaseExtension extends Autodesk.Viewing.Extension {
             document.head.appendChild(script);
         });
     }
+
     loadStylesheet(url) {
         for (const link of document.querySelectorAll('link').values()) {
             if (link.href === url) {
@@ -111,7 +131,9 @@ export class BaseExtension extends Autodesk.Viewing.Extension {
         });
     }
 }
+
 const ToolbarGroupID = 'iot-toolbar';
+
 /**
  * Base class for all IoT extensions.
  *
@@ -123,25 +145,27 @@ export class UIBaseExtension extends BaseExtension {
         this._group = undefined;
         this._button = undefined;
     }
+
     unload() {
         super.unload();
         this.removeToolbarButton();
         return true;
     }
+
     activate() {
-        var _a;
         super.activate();
-        (_a = this._button) === null || _a === void 0 ? void 0 : _a.setState(Autodesk.Viewing.UI.Button.State.ACTIVE);
-        this.activeStatus = true; // TODO: update @types/forge-viewer
+        this._button?.setState(Autodesk.Viewing.UI.Button.State.ACTIVE);
+        this.activeStatus = true;
         return true;
     }
+
     deactivate() {
-        var _a;
         super.deactivate();
-        (_a = this._button) === null || _a === void 0 ? void 0 : _a.setState(Autodesk.Viewing.UI.Button.State.INACTIVE);
-        this.activeStatus = false; // TODO: update @types/forge-viewer
+        this._button?.setState(Autodesk.Viewing.UI.Button.State.INACTIVE);
+        this.activeStatus = false;
         return true;
     }
+
     createToolbarButton(buttonId, buttonTooltip, buttonIconUrl) {
         this._group = this.viewer.toolbar.getControl(ToolbarGroupID);
         if (!this._group) {
@@ -152,7 +176,7 @@ export class UIBaseExtension extends BaseExtension {
         this._button.onClick = (ev) => {
             this.setActive(!this.isActive(''), '');
         };
-        const icon = this._button.container.querySelector('.adsk-button-icon'); // TODO: update @types/forge-viewer
+        const icon = this._button.container.querySelector('.adsk-button-icon');
         if (icon) {
             icon.style.backgroundImage = `url(${buttonIconUrl})`;
             icon.style.backgroundSize = `24px`;
@@ -163,6 +187,7 @@ export class UIBaseExtension extends BaseExtension {
         this._button.setToolTip(buttonTooltip);
         this._group.addControl(this._button);
     }
+
     removeToolbarButton() {
         if (this._group && this._button) {
             this._group.removeControl(this._button);

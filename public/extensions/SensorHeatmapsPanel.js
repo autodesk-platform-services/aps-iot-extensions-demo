@@ -1,4 +1,5 @@
 /// import * as Autodesk from "@types/forge-viewer";
+
 export class SensorHeatmapsPanel extends Autodesk.Viewing.UI.DockingPanel {
     constructor(viewer, id, title, options) {
         super(viewer.container, id, title, options);
@@ -8,6 +9,7 @@ export class SensorHeatmapsPanel extends Autodesk.Viewing.UI.DockingPanel {
         this.container.style.height = '150px';
         this.container.style.resize = 'none';
     }
+
     initialize() {
         this.title = this.createTitleBar(this.titleLabel || this.container.id);
         this.initializeMoveHandlers(this.title);
@@ -31,6 +33,7 @@ export class SensorHeatmapsPanel extends Autodesk.Viewing.UI.DockingPanel {
         this.dropdown = document.getElementById('iot-heatmap-channel');
         this.canvas = document.getElementById('iot-heatmap-legend');
     }
+
     updateChannels(dataView) {
         if (!this.dropdown) {
             return;
@@ -45,6 +48,7 @@ export class SensorHeatmapsPanel extends Autodesk.Viewing.UI.DockingPanel {
         this.dropdown.onchange = () => this.onDropdownChanged(dataView);
         this.onDropdownChanged(dataView);
     }
+
     onDropdownChanged(dataView) {
         if (!this.dropdown) {
             return;
@@ -64,6 +68,7 @@ export class SensorHeatmapsPanel extends Autodesk.Viewing.UI.DockingPanel {
             this.onChannelChanged(this.dropdown.value);
         }
     }
+
     updateLegend(labels, colorStops) {
         if (!this.canvas) {
             return;
