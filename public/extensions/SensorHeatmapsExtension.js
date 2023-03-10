@@ -19,19 +19,19 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
     onCurrentChannelChanged(oldChannelID, newChannelID) { this.updateHeatmaps(); }
     getSensorValue(surfaceShadingPoint, sensorType) {
         if (!this.dataView || !this.currentTime || !this.currentChannelID) {
-            return 0.0;
+            return Number.NaN;
         }
         const sensor = this.dataView.getSensors().get(surfaceShadingPoint.id);
         if (!sensor) {
-            return 0.0;
+            return Number.NaN;
         }
         const channel = this.dataView.getChannels().get(this.currentChannelID);
         if (!channel) {
-            return 0.0;
+            return Number.NaN;
         }
         const samples = this.dataView.getSamples(surfaceShadingPoint.id, this.currentChannelID);
         if (!samples) {
-            return 0.0;
+            return Number.NaN;
         }
         const fractionalIndex = findNearestTimestampIndex(samples.timestamps, this.currentTime, true);
         const index1 = Math.floor(fractionalIndex);
