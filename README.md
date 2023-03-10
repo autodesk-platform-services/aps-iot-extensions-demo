@@ -23,7 +23,7 @@ Live demo: https://aps-iot-extensions-demo.autodesk.io
 
 ### Running locally
 
-> The code sample is currently hard-coded to work well with a specific BIM model and a specific set of InfluxDB data. Please refer to the [Sample data](###sample-data) section below for more details.
+> The code sample is currently hard-coded to work well with a specific BIM model and a specific set of InfluxDB data. Please refer to the [Sample data](#sample-data) section below for more details.
 
 - clone this repository
 - create a `.env` file in the project folder providing the following env. variables (see `.env.example` for reference):
