@@ -10,6 +10,23 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
         this._surfaceShadingData = undefined;
         this.onChannelChanged = undefined;
         this.getSensorValue = this.getSensorValue.bind(this);
+        this.heatmapConfig = {
+            /*
+            The distance from the sensor that its value will affect the heatmap before dropping off.
+            Measured in world coordinates of the current model. The default value is 160.0.
+            */
+            confidence: 50.0,
+            /*
+            A positive real number. Greater values of power parameter assign greater influence to values
+            closest to the interpolated point. The default value is 2.0.
+            */
+            powerParameter: 2.0,
+            /*
+            The transparency level of the resulting fragment on the heatmap, ranging from 0.0 (completely transparent)
+            to 1.0 (fully opaque). The default value is 1.0.
+            */
+            alpha: 1.0
+        };
     }
     onDataViewChanged(oldDataView, newDataView) {
         this.updateChannels();
@@ -49,7 +66,7 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
         if (this.isActive()) { // TODO: update @types/forge-viewer
             const channelID = this.currentChannelID;
             await this._setupSurfaceShading(this.viewer.model);
-            this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
+            this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue, { heatmapConfig: this.heatmapConfig });
         }
     }
     async updateHeatmaps() {
@@ -57,7 +74,7 @@ export class SensorHeatmapsExtension extends UIBaseExtension {
             const channelID = this.currentChannelID;
             if (!this._surfaceShadingData) {
                 await this._setupSurfaceShading(this.viewer.model);
-                this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue);
+                this._dataVizExt.renderSurfaceShading('iot-heatmap', channelID, this.getSensorValue, { heatmapConfig: this.heatmapConfig });
             }
             else {
                 this._dataVizExt.updateSurfaceShading(this.getSensorValue);
