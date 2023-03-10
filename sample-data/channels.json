@@ -1,0 +1,29 @@
+[
+    {
+        "id": "co",
+        "name": "CO₂",
+        "description": "Level of carbon dioxide.",
+        "type": "double",
+        "unit": "ppm",
+        "min": 0.0,
+        "max": 1.0
+    },
+    {
+        "id": "humidity",
+        "name": "Humidity",
+        "description": "Air humidity.",
+        "type": "double",
+        "unit": "%",
+        "min": 0.0,
+        "max": 100.0
+    },
+    {
+        "id": "temperature",
+        "name": "Temperature",
+        "description": "Internal temperature.",
+        "type": "double",
+        "unit": "°F",
+        "min": 50.0,
+        "max": 100.0
+    }
+]

@@ -1,87 +1,8 @@
 const { InfluxDB } = require('@influxdata/influxdb-client');
 const { INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN } = require('../config.js');
 
-const SENSORS = [
-    {
-        id: 'TLM0100',
-        name: 'Living Room',
-        description: 'Basic sensor in the middle of the living room.',
-        groupName: 'Level 1',
-        location: {
-            x: 31.92,
-            y: 11.49,
-            z: -12.97
-        },
-        objectId: 4124
-    },
-    {
-        id: 'TLM0101',
-        name: 'Dining Table',
-        description: 'Basic sensor at the dining table.',
-        groupName: 'Level 1',
-        location: {
-            x: -10,
-            y: 41.64,
-            z: -12.15
-        },
-        objectId: 4111
-    },
-    {
-        id: 'TLM0102',
-        name: 'Kitchen',
-        description: 'Basic sensor in the kitchen.',
-        groupName: 'Level 1',
-        location: {
-            x: 10,
-            y: 41.64,
-            z: -12.15
-        },
-        objectId: 4111
-    },
-    {
-        id: 'TLM0103',
-        code: 'TLM0103',
-        name: 'Bedroom',
-        description: 'Basic sensor in the bedroom.',
-        groupName: 'Level 2',
-        location: {
-            x: -7.46,
-            y: 41.47,
-            z: 2.97
-        },
-        objectId: 4085
-    }
-];
-
-const CHANNELS = [
-    {
-        id: 'co',
-        name: 'CO₂',
-        description: 'Level of carbon dioxide.',
-        type: 'double',
-        unit: 'ppm',
-        min: 0.0,
-        max: 1.0
-    },
-    {
-        id: 'humidity',
-        name: 'Humidity',
-        description: 'Air humidity.',
-        type: 'double',
-        unit: '%',
-        min: 0.0,
-        max: 100.0
-    },
-    {
-        id: 'temperature',
-        name: 'Temperature',
-        description: 'Internal temperature.',
-        type: 'double',
-        unit: '°F',
-        min: 50.0,
-        max: 100.0
-    }
-];
+const SENSORS = require('../sample-data/sensors.json');
+const CHANNELS = require('../sample-data/channels.json');
 
 const SENSOR_ID_COLUMN_NAME = 'sensor_id';
 const CHANNEL_ID_COLUMN_NAME = '_field';
