@@ -43,11 +43,7 @@ or `objectId` (the dbID of the room the sensor should be associated with)
 
 ## Tips & Tricks
 
-If you need to find all _room volumes_ in a Revit design (for example, to apply heatmaps to them), you can use the following viewer method in the browser console:
-
-```js
-NOP_VIEWER.search('Revit Rooms', ids => { console.log('Room volume object IDs', ids); }, err => { console.error(err); }, ['Category'], { searchHidden: true });
-```
+In case you're not seeing the heatmaps or room information, please refer to this blog: [Rooms information in Revit File](https://aps.autodesk.com/blog/no-room-information-revit-file-when-working-dataviz-extension-viewer)
 
 ## License
 
