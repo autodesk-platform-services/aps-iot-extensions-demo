@@ -67,6 +67,9 @@ export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
                         y: { min, max }
                     }
                 }
+            },
+            options: {
+                animation: false
             }
         });
     }
@@ -88,7 +91,7 @@ export class SensorDetailPanel extends Autodesk.Viewing.UI.DockingPanel {
                 for (let i = 0; i < radii.length; i++) {
                     radii[i] = (i === sampleIndex) ? 9 : 3;
                 }
-                chart.update();
+                chart.update('none');
             }
             this._lastHighlightedPointIndex = sampleIndex;
         }

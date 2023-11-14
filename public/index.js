@@ -5,14 +5,11 @@ import {
     SensorDetailExtensionID,
     SensorHeatmapsExtensionID
 } from './viewer.js';
-import { initTimeline } from './timeline.js';
 import { MyDataView } from './dataview.js';
 import {
     APS_MODEL_URN,
     APS_MODEL_VIEW,
-    APS_MODEL_DEFAULT_FLOOR_INDEX,
-    DEFAULT_TIMERANGE_START,
-    DEFAULT_TIMERANGE_END
+    APS_MODEL_DEFAULT_FLOOR_INDEX
 } from './config.js';
 
 const EXTENSIONS = [
@@ -26,12 +23,9 @@ const EXTENSIONS = [
 const viewer = await initViewer(document.getElementById('preview'), EXTENSIONS);
 loadModel(viewer, APS_MODEL_URN, APS_MODEL_VIEW);
 viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async () => {
-    // Initialize the timeline
-    initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
-
     // Initialize our data view
     const dataView = new MyDataView();
-    await dataView.init({ start: DEFAULT_TIMERANGE_START, end: DEFAULT_TIMERANGE_END });
+    await dataView.init();
 
     // Configure and activate our custom IoT extensions
     const extensions = [SensorListExtensionID, SensorSpritesExtensionID, SensorDetailExtensionID, SensorHeatmapsExtensionID].map(id => viewer.getExtension(id));
@@ -53,20 +47,16 @@ viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async () => {
     viewer.getExtension(SensorListExtensionID).onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
     viewer.getExtension(SensorSpritesExtensionID).onSensorClicked = (sensorId) => onCurrentSensorChanged(sensorId);
     viewer.getExtension(SensorHeatmapsExtensionID).onChannelChanged = (channelId) => onCurrentChannelChanged(channelId);
-    onTimeRangeChanged(DEFAULT_TIMERANGE_START, DEFAULT_TIMERANGE_END);
 
-    async function onTimeRangeChanged(start, end) {
-        await dataView.refresh({ start, end });
-        extensions.forEach(ext => ext.dataView = dataView);
-    }
+    dataView.addEventListener('update', function () {
+        const lastTimestamp = dataView.getTimerange()[1];
+        extensions.forEach(ext => ext.currentTime = lastTimestamp);
+        viewer.getExtension(SensorDetailExtensionID).dataView = dataView; // Force the sensor detail chart to update
+    });
 
     function onLevelChanged({ target, levelIndex }) {
         dataView.floor = levelIndex !== undefined ? target.floorData[levelIndex] : null;
         extensions.forEach(ext => ext.dataView = dataView);
-    }
-
-    function onTimeMarkerChanged(time) {
-        extensions.forEach(ext => ext.currentTime = time);
     }
 
     function onCurrentSensorChanged(sensorId) {

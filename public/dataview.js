@@ -1,12 +1,39 @@
-export class MyDataView {
+export class MyDataView extends EventTarget {
     constructor() {
-        this._timerange = [new Date(), new Date()];
+        super();
         this._timestamps = [];
         this._sensors = new Map();
         this._channels = new Map();
-        this._data = null;
+        this._data = new Map();
         this._floor = null;
         this._sensorsFilteredByFloor = null;
+
+        // Add random realtime data once every 5 seconds (only keeping the last 12 samples)
+        setInterval(() => {
+            // Push new timestamp
+            if (this._timestamps.length >= 12) {
+                this._timestamps.shift();
+            }
+            this._timestamps.push(new Date());
+            // Push new data sample to each sensor/channel
+            for (const sensorId of this._sensors.keys()) {
+                for (const [channelId, channel] of this._channels.entries()) {
+                    const key = `${sensorId}/${channelId}`;
+                    const arr = this._data.get(key);
+                    if (!arr) {
+                        const value = channel.min + Math.random() * (channel.max - channel.min);
+                        this._data.set(key, [value])
+                    } else {
+                        if (arr.length >= 12) {
+                            arr.shift();
+                        }
+                        const value = arr[arr.length - 1] + 0.1 * (Math.random() - 0.5) * (channel.max - channel.min);
+                        arr.push(Math.max(channel.min, Math.min(channel.max, value)));
+                    }
+                }
+            }
+            this.dispatchEvent(new CustomEvent('update'));
+        }, 5000);
     }
 
     async _fetch(url) {
@@ -58,30 +85,12 @@ export class MyDataView {
         }
     }
 
-    async _loadSamples(timerange, resolution) {
-        const { start, end } = timerange;
-        this._timerange[0] = start;
-        this._timerange[1] = end;
-        const { timestamps, data } = await this._fetch(`/iot/samples?start=${start.toISOString()}&end=${end.toISOString()}&resolution=${resolution}`)
-        this._timestamps = timestamps.map(str => new Date(str));
-        this._data = data;
-    }
-
-    async init(timerange, resolution = 32) {
+    async init() {
         try {
             await Promise.all([
                 this._loadSensors(),
-                this._loadChannels(),
-                this._loadSamples(timerange, resolution)
+                this._loadChannels()
             ]);
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    async refresh(timerange, resolution = 32) {
-        try {
-            await this._loadSamples(timerange, resolution);
         } catch (err) {
             console.error(err);
         }
@@ -110,16 +119,22 @@ export class MyDataView {
 
     getChannels() { return this._channels; }
 
-    getTimerange() { return this._timerange; }
+    getTimerange() {
+        return this._timestamps.length > 0
+            ? [this._timestamps[0], this._timestamps[this._timestamps.length - 1]]
+            : [new Date(), new Date()];
+    }
 
     getSamples(sensorId, channelId) {
-        if (!this._data[sensorId] || !this._data[sensorId][channelId]) {
+        const key = `${sensorId}/${channelId}`;
+        if (!this._data.has(key)) {
             return null;
-        }
-        return {
-            count: this._timestamps.length,
-            timestamps: this._timestamps,
-            values: this._data[sensorId][channelId]
+        } else {
+            return {
+                count: this._timestamps.length,
+                timestamps: this._timestamps,
+                values: this._data.get(key)
+            }
         }
     }
 }
