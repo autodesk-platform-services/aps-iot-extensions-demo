@@ -27,7 +27,16 @@ const viewer = await initViewer(document.getElementById('preview'), EXTENSIONS);
 loadModel(viewer, APS_MODEL_URN, APS_MODEL_VIEW);
 viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async () => {
     // Initialize the timeline
-    initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged);
+    initTimeline(document.getElementById('timeline'), onTimeRangeChanged, onTimeMarkerChanged)
+        .then(timeline => {
+            function updateTimelineRange() {
+                const startDate = document.getElementById('start-date').value;
+                const endDate = document.getElementById('end-date').value;
+                timeline.zoomTo(startDate, endDate);
+            }
+            document.getElementById('start-date').addEventListener('change', updateTimelineRange);
+            document.getElementById('end-date').addEventListener('change', updateTimelineRange);
+        });
 
     // Initialize our data view
     const dataView = new MyDataView();
