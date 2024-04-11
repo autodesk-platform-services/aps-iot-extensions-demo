@@ -81,3 +81,15 @@ viewer.addEventListener(Autodesk.Viewing.GEOMETRY_LOADED_EVENT, async () => {
         extensions.forEach(ext => ext.currentChannelID = channelId);
     }
 });
+
+window.getBoundingBox = function (model, dbid) {
+    const tree = model.getInstanceTree();
+    const frags = model.getFragmentList();
+    const bounds = new THREE.Box3();
+    const result = new THREE.Box3();
+    tree.enumNodeFragments(dbid, function (fragid) {
+        frags.getWorldBounds(fragid, bounds);
+        result.union(bounds);
+    }, true);
+    return result;
+};
