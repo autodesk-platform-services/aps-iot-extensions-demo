@@ -5,7 +5,9 @@
 [![npm](https://img.shields.io/badge/npm-8.15-blue.svg)](https://www.npmjs.com/)
 [![license](https://img.shields.io/:license-mit-green.svg)](https://opensource.org/licenses/MIT)
 
-Sample [Autodesk Platform Services](https://aps.autodesk.com) application with a set of custom viewer extensions (built on top of the [Data Visualization Extensions](https://forge.autodesk.com/en/docs/dataviz/v1/developers_guide/introduction)) used to display historical IoT data in a BIM model.
+Sample [Autodesk Platform Services](https://aps.autodesk.com) application, built using the [Data Visualization Extension](https://aps.autodesk.com/en/docs/dataviz/v1/developers_guide/overview/).
+
+See the [Data Visualization Extension](https://aps.autodesk.com/en/docs/dataviz/v1/developers_guide/overview/) homepage for more details.
 
 Live demo: https://aps-iot-extensions-demo.autodesk.io
 
